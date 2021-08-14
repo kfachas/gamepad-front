@@ -2,18 +2,22 @@
   box-sizing: border-box;
   color: white;
   font-family: "Comfortaa", Georgia, "Times New Roman", Times, serif !important;
+  text-decoration: none;
 }
 
 body {
-  background-color: #282c34;
+  background-color: #1f2023;
+  transition: 0.3s;
 }
 
 header {
   height: 100px;
+  padding: 20px;
   border-bottom: 1px solid #6a77e8;
   margin-bottom: 50px;
   display: flex;
   align-items: center;
+  justify-content: space-between;
 }
 
 header img {
@@ -21,12 +25,43 @@ header img {
   width: 100px;
   object-fit: contain;
   object-position: center;
+  cursor: pointer;
+}
+header button {
+  border: none;
+  background-color: #6a77e8;
+  border: 1px solid #6a77e8;
+  padding: 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+header button:hover {
+  background-color: white;
+  color: black;
 }
 
 main {
   max-width: 1144px;
   margin: 0 auto;
   border: 1px solid white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.listGames {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.listGames li {
+  height: 300px;
+  width: 200px;
+  border-radius: 10px;
+  background-position: center;
+  background-size: cover;
 }
 
 footer {
@@ -35,4 +70,174 @@ footer {
   bottom: 0px;
   height: 50px;
   border: 1px solid white;
+}
+
+.displayModal {
+  display: flex;
+  position: absolute;
+  background-color: rgb(0, 0, 0, 0.8);
+  height: 100%;
+  width: 100%;
+  position: fixed;
+  top: 0px;
+  z-index: 3;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.chooseDiv {
+  background-color: #5564e8;
+  border-radius: 10px;
+  height: 200px;
+  width: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: center;
+  transition: 0.3s;
+}
+
+.chooseDiv button {
+  margin: 10px;
+  border: none;
+  border-radius: 10px;
+  padding: 10px;
+  background-color: #ff318e;
+  width: 100px;
+  transition: 0.3s;
+}
+.chooseDiv button:hover {
+  background-color: white;
+  color: black;
+  padding: 12px;
+  box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px,
+    rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px,
+    rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
+}
+
+.signInModal {
+  background-color: #5564e8;
+  height: 300px;
+  width: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+.goBack {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  height: 25px;
+  width: 25px;
+  margin: 10px;
+  border: none;
+  background-color: white;
+  color: black;
+  transition: 0.3s;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.3s;
+}
+.goBack:hover {
+  background-color: #ff318e;
+}
+
+.signInModal input:not(:last-child) {
+  background-color: #5564e8;
+  border: none;
+  outline: none;
+  border-bottom: 1px solid hsl(333, 100%, 60%);
+  margin: 10px;
+  padding: 5px;
+  color: white;
+  width: 150px;
+}
+.signInModal input:last-child {
+  background-color: #ff318e;
+  margin-top: 20px;
+  padding: 5px;
+  border: none;
+  border-radius: 5px;
+  border: 1px solid white;
+  transition: 0.2s;
+  cursor: pointer;
+}
+.signInModal input:last-child:hover {
+  background-color: white;
+  color: black;
+}
+.signInModal form {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.signUpModal {
+  background-color: #5564e8;
+  height: 400px;
+  width: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+.signUpModal form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.signUpModal form > div {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  margin: 10px;
+}
+
+.signUpModal form input {
+  margin-top: 5px;
+  background-color: #5564e8;
+  border: none;
+  outline: none;
+  border-bottom: 2px solid #ff318e;
+  padding: 5px;
+  color: white;
+  width: 150px;
+}
+.signUpModal form .submitBtn {
+  margin-top: 20px;
+  background-color: #ff318e;
+  padding: 5px;
+  border: none;
+  border-radius: 5px;
+  border: 1px solid white;
+  transition: 0.2s;
+  cursor: pointer;
+  width: 100px;
+}
+
+.signUpModal .submitBtn:hover {
+  background-color: white;
+  color: black;
+}
+
+::placeholder {
+  /* Chrome, Firefox, Opera, Safari 10.1+ */
+  color: lightgray;
+  opacity: 1; /* Firefox */
+}
+
+:-ms-input-placeholder {
+  /* Internet Explorer 10-11 */
+  color: lightgray;
+}
+
+::-ms-input-placeholder {
+  /* Microsoft Edge */
+  color: lightgray;
 }

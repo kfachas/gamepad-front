@@ -1,9 +1,24 @@
 import logo from "../assets/game.png";
-
-const Header = () => {
+import { Link, useHistory } from "react-router-dom";
+const Header = ({ setHideModal }) => {
+  const history = useHistory();
   return (
     <header>
-      <img src={logo} alt="logo gamepad" />
+      <img
+        src={logo}
+        alt="logo gamepad"
+        onClick={() => {
+          history.push("/");
+        }}
+      />
+      <Link to="/collection">My Collection</Link>
+      <button
+        onClick={() => {
+          setHideModal(false);
+        }}
+      >
+        Login
+      </button>
     </header>
   );
 };

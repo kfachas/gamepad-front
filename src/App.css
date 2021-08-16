@@ -1,36 +1,49 @@
 * {
   box-sizing: border-box;
-  color: white;
   font-family: "Comfortaa", Georgia, "Times New Roman", Times, serif !important;
-  text-decoration: none;
+  text-decoration: none !important;
+}
+
+a {
+  color: white;
+}
+a:hover {
+  color: white;
 }
 
 body {
   background-color: #1f2023;
   transition: 0.3s;
+  color: white;
 }
 
 header {
-  height: 100px;
+  height: 60px;
   padding: 20px;
-  border-bottom: 1px solid #6a77e8;
+  border-bottom: 1px solid #ff4655;
   margin-bottom: 50px;
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
+header .logoHeader {
+  display: flex;
+  align-items: center;
+}
+
 header img {
-  height: 100px;
-  width: 100px;
+  padding-right: 5px;
+  height: 30px;
+  width: 30px;
   object-fit: contain;
   object-position: center;
   cursor: pointer;
 }
 header button {
   border: none;
-  background-color: #6a77e8;
-  border: 1px solid #6a77e8;
+  background-color: #ff4655;
+  border: 1px solid #ff4655;
   padding: 10px;
   border-radius: 10px;
   cursor: pointer;
@@ -38,76 +51,206 @@ header button {
 }
 header button:hover {
   background-color: white;
-  color: black;
+  color: black !important;
 }
 
 main {
   max-width: 1144px;
   margin: 0 auto;
-  border: 1px solid white;
+}
+.mainTop {
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: center;
+  align-items: center;
+  width: 450px;
+  margin: 0 auto;
+  text-align: center;
+  /* border: 1px solid white; */
+}
+.mainTop div:first-child {
+  display: flex;
+  align-items: center;
+  font-weight: bold;
+}
+.mainTop h1 {
+  text-shadow: white 0.1em 0.1em 0.1em;
+}
+
+.mainTop img {
+  height: 70px;
+  width: 70px;
+}
+.mainTop .inputSearch {
+  box-shadow: rgba(50, 50, 93, 0.25) 0px 50px 100px -20px,
+    rgba(0, 0, 0, 0.3) 0px 30px 60px -30px,
+    rgba(10, 37, 64, 0.35) 0px -2px 6px 0px inset;
+  background-color: white;
+  height: 30px;
+  color: black;
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 10px;
+}
+.mainTop input {
+  flex: 1;
+  border: none;
+  outline: none;
 }
 
 .listGames {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
 }
 
 .listGames li {
+  margin: 10px;
   height: 300px;
   width: 200px;
   border-radius: 10px;
   background-position: center;
   background-size: cover;
+  cursor: pointer;
+  display: flex;
+  align-items: flex-end;
+  /* position: relative; */
+  transition: 0.3s;
+}
+
+.listGames li .titleLi {
+  text-align: center;
+  padding: 10px;
+  width: 200px;
+  height: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  text-overflow: ellipsis;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+  color: white;
+  background: linear-gradient(
+    to top,
+    rgb(0, 0, 0, 1) 0%,
+    rgb(0, 0, 0, 0.6) 70%,
+    rgb(0, 0, 0, 0) 100%
+  );
+}
+
+.listGames li:hover .titleLi {
+  height: 100%;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+.listGames li:hover .titleLi .hoverGame {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+.hoverGame {
+  display: none;
 }
 
 footer {
   margin-top: 50px;
-  position: sticky;
+  position: static;
   bottom: 0px;
   height: 50px;
-  border: 1px solid white;
 }
-
+@keyframes example {
+  from {
+    background-color: inherit;
+  }
+  to {
+    background-color: rgb(0, 0, 0, 0.8);
+  }
+}
+@keyframes modal {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
 .displayModal {
   display: flex;
   position: absolute;
   background-color: rgb(0, 0, 0, 0.8);
   height: 100%;
   width: 100%;
-  position: fixed;
   top: 0px;
   z-index: 3;
   align-items: center;
   justify-content: center;
   flex-direction: column;
+  animation-name: example;
+  animation-duration: 2s;
 }
 
+.titleModal {
+  background-color: rgb(0, 0, 0, 0.7);
+  padding: 10px 48px;
+  font-size: 30px;
+  position: absolute;
+  top: 45%;
+  left: 0%;
+}
+
+.closeModal {
+  position: absolute;
+  top: 0;
+  right: 0;
+  margin: 5px;
+  border-radius: 50%;
+  transition: 0.3s;
+  color: white;
+  cursor: pointer;
+  font-size: 30px;
+}
+.closeModal:hover {
+  transform: rotate(90deg);
+  color: white;
+}
 .chooseDiv {
-  background-color: #5564e8;
+  background-color: #1f2023;
   border-radius: 10px;
-  height: 200px;
-  width: 200px;
+  height: 500px;
+  width: 500px;
+  display: flex;
+  justify-content: space-between;
+  transition: 0.3s;
+  position: relative;
+  animation-name: modal;
+  animation-duration: 2s;
+}
+
+.choose {
+  width: 250px;
   display: flex;
   flex-direction: column;
-  justify-content: space-around;
   align-items: center;
-  transition: 0.3s;
+  justify-content: center;
 }
 
-.chooseDiv button {
+.choose button {
   margin: 10px;
   border: none;
   border-radius: 10px;
   padding: 10px;
-  background-color: #ff318e;
+  background-color: #ff4655;
   width: 100px;
   transition: 0.3s;
+  color: white;
 }
-.chooseDiv button:hover {
+.choose button:hover {
   background-color: white;
   color: black;
   padding: 12px;
@@ -117,18 +260,15 @@ footer {
 }
 
 .signInModal {
-  background-color: #5564e8;
-  height: 300px;
-  width: 300px;
   display: flex;
   align-items: center;
   justify-content: center;
-  position: relative;
+  color: black;
 }
 .goBack {
   position: absolute;
   top: 0px;
-  left: 0px;
+  left: 50%;
   height: 25px;
   width: 25px;
   margin: 10px;
@@ -143,21 +283,28 @@ footer {
   transition: 0.3s;
 }
 .goBack:hover {
-  background-color: #ff318e;
+  color: white;
+  background-color: #ff4655;
+}
+
+.how > div {
+  display: flex;
+  margin: 10px 5px;
+  font-size: 15px;
 }
 
 .signInModal input:not(:last-child) {
-  background-color: #5564e8;
   border: none;
   outline: none;
-  border-bottom: 1px solid hsl(333, 100%, 60%);
+  border-bottom: 1px solid #ff4655;
   margin: 10px;
   padding: 5px;
-  color: white;
+  color: black;
   width: 150px;
 }
 .signInModal input:last-child {
-  background-color: #ff318e;
+  background-color: white;
+  color: black !important;
   margin-top: 20px;
   padding: 5px;
   border: none;
@@ -165,10 +312,15 @@ footer {
   border: 1px solid white;
   transition: 0.2s;
   cursor: pointer;
+
+  color: white;
+  transition: ease-out 0.3s;
 }
 .signInModal input:last-child:hover {
-  background-color: white;
-  color: black;
+  /* box-shadow: inset 150px 0 0 0 cyan; */
+  transform: rotate(360deg);
+  background-color: #ff4655;
+  color: white !important;
 }
 .signInModal form {
   display: flex;
@@ -178,19 +330,16 @@ footer {
 }
 
 .signUpModal {
-  background-color: #5564e8;
-  height: 400px;
-  width: 400px;
   display: flex;
   align-items: center;
   justify-content: center;
-  position: relative;
 }
 .signUpModal form {
   display: flex;
   flex-direction: column;
   align-items: center;
 }
+
 .signUpModal form > div {
   display: flex;
   flex-direction: column;
@@ -201,43 +350,77 @@ footer {
 
 .signUpModal form input {
   margin-top: 5px;
-  background-color: #5564e8;
+  color: black !important;
   border: none;
   outline: none;
-  border-bottom: 2px solid #ff318e;
+  border-bottom: 2px solid #ff4655;
   padding: 5px;
   color: white;
   width: 150px;
 }
 .signUpModal form .submitBtn {
   margin-top: 20px;
-  background-color: #ff318e;
+  background-color: white;
+  color: black;
   padding: 5px;
   border: none;
   border-radius: 5px;
-  border: 1px solid white;
-  transition: 0.2s;
+
   cursor: pointer;
   width: 100px;
+  transition: ease-out 1s;
 }
 
 .signUpModal .submitBtn:hover {
+  box-shadow: inset 150px 0 0 0 #ff4655;
   background-color: white;
-  color: black;
+  color: white !important;
 }
 
 ::placeholder {
   /* Chrome, Firefox, Opera, Safari 10.1+ */
   color: lightgray;
   opacity: 1; /* Firefox */
+  font-size: 13px;
 }
 
 :-ms-input-placeholder {
   /* Internet Explorer 10-11 */
   color: lightgray;
+  font-size: 13px;
 }
 
 ::-ms-input-placeholder {
   /* Microsoft Edge */
   color: lightgray;
+  font-size: 13px;
+}
+
+@keyframes load {
+  0% {
+    opacity: 0.08;
+    /*         font-size: 10px; */
+    /* 				font-weight: 400; */
+    filter: blur(5px);
+    letter-spacing: 3px;
+  }
+  100% {
+    /*         opacity: 1; */
+    /*         font-size: 12px; */
+    /* 				font-weight:600; */
+    /* 				filter: blur(0); */
+  }
+}
+
+.animate {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  margin: auto;
+  font-size: 40px;
+  font-family: Helvetica, sans-serif, Arial;
+  animation: load 1.2s infinite 0s ease-in-out;
+  animation-direction: alternate;
+  text-shadow: 0 0 1px white;
 }

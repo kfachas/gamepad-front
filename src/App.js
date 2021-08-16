@@ -6,21 +6,53 @@ import Footer from "./containers/Footer";
 import Collection from "./containers/Collection";
 import Login from "./components/Login";
 import { useState } from "react";
-
+import Game from "./components/Game";
+import Cookies from "js-cookie";
 function App() {
   const [hideModal, setHideModal] = useState(true);
+  const [userToken, setUserToken] = useState();
+  const [user, setUser] = useState({});
+  const setToken = (token, userInfo) => {
+    if (token) {
+      Cookies.set("token", token);
+      setUserToken(token);
+    } else {
+      Cookies.remove("token");
+      setUserToken(null);
+    }
+    if (userInfo) {
+      const obj = { ...user };
+      obj.picture = userInfo.account.avatar;
+      obj.username = userInfo.account.username;
+      setUser(obj);
+    } else {
+      setUser(null);
+    }
+  };
   return (
     <Router>
-      <Header setHideModal={setHideModal} />
+      <Header
+        setHideModal={setHideModal}
+        userToken={userToken}
+        setToken={setToken}
+        user={user}
+      />
       {!hideModal && (
-        <Login hideModal={hideModal} setHideModal={setHideModal} />
+        <Login
+          hideModal={hideModal}
+          setHideModal={setHideModal}
+          setToken={setToken}
+        />
       )}
       <Switch>
-        <Route exact path="/">
-          <Home />
-        </Route>
         <Route path="collection">
           <Collection />
+        </Route>
+        <Route exact path="/games/:id">
+          <Game userToken={userToken} />
+        </Route>
+        <Route exact path="/">
+          <Home userToken={userToken} />
         </Route>
       </Switch>
       <Footer />

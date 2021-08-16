@@ -1,7 +1,8 @@
 const Collection = () => {
   return (
     <main>
-      <span>My Collection</span>
+      <h3>My Collection</h3>
+      <span>Testestes</span>
     </main>
   );
 };

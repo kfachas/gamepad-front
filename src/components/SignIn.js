@@ -15,7 +15,7 @@ const SignIn = ({ setSignInModal, setToken, setHideModal }) => {
     try {
       if (values.password && values.email) {
         const response = await axios.post(
-          "http://localhost:3001/user/login",
+          "https://gamepad-back.herokuapp.com/user/login",
           values
         );
         setToken(response.data.token, response.data);

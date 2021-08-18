@@ -11,13 +11,13 @@ const Home = ({ userToken }) => {
   const [userSearch, setUserSearch] = useState("");
   const [count, setCount] = useState();
   const [isLoading, setIsLoading] = useState(true);
-  const [page, setPage] = useState(1);
+  // const [page, setPage] = useState(1);
   // setPage(1);
   useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:3001/?search=${userSearch}&page=${page}`
+          `http://localhost:3001/?search=${userSearch}&page=1`
         );
         setData(response.data.results);
         setCount(response.data.count);
@@ -30,7 +30,7 @@ const Home = ({ userToken }) => {
       }
     };
     fetchData();
-  }, [userSearch, page]);
+  }, [userSearch]);
   const limit = count / 20;
   const tab = [];
   for (let i = 0; i < limit; i++) {

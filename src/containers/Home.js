@@ -17,7 +17,7 @@ const Home = ({ userToken }) => {
     const fetchData = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:3001/?search=${userSearch}&page=1`
+          `https://gamepad-back.herokuapp.com/?search=${userSearch}&page=1`
         );
         setData(response.data.results);
         setCount(response.data.count);

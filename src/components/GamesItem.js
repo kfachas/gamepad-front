@@ -37,7 +37,7 @@ const GamesItem = ({ elem, userToken }) => {
                   const rate = 1;
 
                   const response = await axios.post(
-                    "http://localhost:3001/game/reviewRating",
+                    "https://gamepad-back.herokuapp.com/game/reviewRating",
                     {
                       id: elem._id,
                       rate: rate,
@@ -59,7 +59,7 @@ const GamesItem = ({ elem, userToken }) => {
                   const rate = -1;
 
                   const response = await axios.post(
-                    "http://localhost:3001/game/reviewRating",
+                    "https://gamepad-back.herokuapp.com/game/reviewRating",
                     {
                       id: elem._id,
                       rate: rate,

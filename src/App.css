@@ -158,6 +158,84 @@ main {
   display: none;
 }
 
+.imgGame img {
+  height: 300px;
+  width: 500px;
+  object-fit: cover;
+  object-position: center;
+}
+
+.descGame {
+  padding: 10px;
+  height: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.descGame button {
+  border: none;
+  background-color: inherit;
+  border: 1px solid white;
+  color: white;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  text-align: start;
+  justify-content: center;
+  align-items: flex-start;
+  width: 120px;
+  height: 50px;
+  padding: 5px;
+  margin-right: 10px;
+  margin-bottom: 10px;
+}
+
+.categ {
+  display: flex;
+  flex-direction: column;
+}
+
+.categ > div {
+  display: flex;
+  margin-bottom: 10px;
+}
+.categ > div > div {
+  width: 50%;
+}
+.categ span {
+  color: gray;
+}
+.categ p {
+  font-size: 13px;
+}
+.reviewBloc {
+  background-color: #2a2b2e;
+  padding: 10px;
+  margin: 0 auto;
+  width: 600px;
+  height: 150px;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.reviewText h5 {
+  text-decoration: underline !important;
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+
+.reviewText p {
+  color: #bfbfc0;
+  font-size: 15px;
+}
+
+.reviewText {
+  width: 100%;
+}
+
 footer {
   margin-top: 50px;
   position: static;

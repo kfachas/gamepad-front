@@ -12,7 +12,7 @@ const Home = ({ userToken }) => {
   const [count, setCount] = useState();
   const [isLoading, setIsLoading] = useState(true);
   const [page, setPage] = useState(1);
-
+  // setPage(1);
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -24,7 +24,7 @@ const Home = ({ userToken }) => {
 
         setTimeout(() => {
           setIsLoading(false);
-        }, 1000);
+        }, 500);
       } catch (error) {
         console.log(error.message);
       }
@@ -77,10 +77,7 @@ const Home = ({ userToken }) => {
                 <div className="titleLi">
                   <span>{elem.name}</span>
                   <div className="hoverGame">
-                    {elem.parent_platforms.map((platforms, index) => {
-                      return <p key={index}>{platforms.name}</p>;
-                    })}
-                    <p>Released: {elem.released}</p>
+                    <p>HIDDEN</p>
                   </div>
                 </div>
               </li>

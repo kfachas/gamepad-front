@@ -24,13 +24,11 @@ const Game = ({ userToken }) => {
   useEffect(() => {
     const fetchDataGame = async () => {
       try {
-        const response = await axios.get(
-          `https://gamepad-back.herokuapp.com/games/${id}`
-        );
+        const response = await axios.get(`http://localhost:3001/games/${id}`);
         setDataGame(response.data);
         if (userToken) {
           const response2 = await axios.post(
-            "https://gamepad-back.herokuapp.com/user/gamesFav",
+            "http://localhost:3001/user/gamesFav",
             { token: userToken },
             { headers: { Authorization: `Bearer ${userToken}` } }
           );
@@ -73,7 +71,7 @@ const Game = ({ userToken }) => {
     const fetchReviews = async () => {
       try {
         const response = await axios.post(
-          "https://gamepad-back.herokuapp.com/game/reviews",
+          "http://localhost:3001/game/reviews",
           { gameId: dataGame.id }
         );
 
@@ -105,7 +103,7 @@ const Game = ({ userToken }) => {
                 onClick={async () => {
                   try {
                     const response = await axios.post(
-                      "https://gamepad-back.herokuapp.com/user/removeFavorites",
+                      "http://localhost:3001/user/removeFavorites",
                       { token: userToken, game: { id: dataGame.id } },
                       { headers: { Authorization: `Bearer ${userToken}` } }
                     );
@@ -127,7 +125,7 @@ const Game = ({ userToken }) => {
                 onClick={async () => {
                   try {
                     const response = await axios.post(
-                      "https://gamepad-back.herokuapp.com/user/addFavorites",
+                      "http://localhost:3001/user/addFavorites",
                       {
                         token: userToken,
                         game: {
@@ -204,7 +202,7 @@ const Game = ({ userToken }) => {
               </div>
               <div>
                 <span>Age rating</span>
-                <p>{dataGame.esrb_rating.id}</p>
+                <p>{dataGame.esrb_rating && dataGame.esrb_rating.id}</p>
               </div>
             </div>
             {/* <form onSubmit={handleSubmit}>

@@ -11,32 +11,55 @@ const Home = ({ userToken }) => {
   const [userSearch, setUserSearch] = useState("");
   const [count, setCount] = useState();
   const [isLoading, setIsLoading] = useState(true);
+  const [platform, setPlatform] = useState(0);
+  const [tag, setTag] = useState(0);
+  const [tagsData, setTagsData] = useState();
+
   // const [page, setPage] = useState(1);
   // setPage(1);
   useEffect(() => {
     const fetchData = async () => {
       try {
+        // s
         const response = await axios.get(
-          `https://gamepad-back.herokuapp.com/?search=${userSearch}&page=1`
+          `http://localhost:3001/?search=${userSearch}&page=1`
         );
         setData(response.data.results);
         setCount(response.data.count);
-
         setTimeout(() => {
           setIsLoading(false);
         }, 500);
+        // }
+        // else if (tag !== 0) {
+        //   const response = await axios.get(
+        //     `http://localhost:3001/?search=${userSearch}&page=1&tag=${tag}`
+        //   );
+        //   setData(response.data.results);
+        //   setCount(response.data.count);
+        // }
       } catch (error) {
         console.log(error.message);
       }
     };
+    // const fetchTags = async () => {
+    //   try {
+    //     const response = await axios.get("http://localhost:3001/tags");
+    //     setTagsData(response.data.results);
+    // // setTimeout(() => {
+    // setIsLoading(false);
+    // // }, 500);
+    //   } catch (error) {
+    //     console.log(error.message);
+    //   }
+    // };
+    // fetchTags();
     fetchData();
-  }, [userSearch]);
+  }, [userSearch, platform, tag]);
   const limit = count / 20;
   const tab = [];
   for (let i = 0; i < limit; i++) {
     tab.push(i);
   }
-
   return isLoading ? (
     <Loader />
   ) : (
@@ -57,7 +80,39 @@ const Home = ({ userToken }) => {
         </div>
         <span>Search {count} games</span>
       </div>
-
+      {userSearch.length > 0 && (
+        <div>
+          <div>
+            <select
+              name="platform"
+              id="platformSelect"
+              onChange={(e) => setPlatform(e.target.value)}
+            >
+              <option value="">Platform: All</option>
+              <option value="1">PC</option>
+              <option value="2">Playstation</option>
+              <option value="3">Xbox</option>
+              <option value="4">iOS</option>
+              <option value="5">Mac</option>
+              <option value="6">Linux</option>
+              <option value="7">Nintendo</option>
+              <option value="8">Android</option>
+            </select>
+            <select
+              name="type"
+              id="typeSelect"
+              onChange={(e) => {
+                setTag(e.target.value);
+              }}
+            >
+              <option value="">Type: All</option>
+              {/* {tagsData.map((elem) => {
+                return <option value={elem.id}>{elem.name}</option>;
+              })} */}
+            </select>
+          </div>
+        </div>
+      )}
       <ul className="listGames">
         {data.map((elem) => {
           return (

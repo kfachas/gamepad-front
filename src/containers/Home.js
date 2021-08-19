@@ -6,60 +6,78 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSearch } from "@fortawesome/free-solid-svg-icons";
 import { Link } from "react-router-dom";
 import Loader from "../components/Loader";
+
 const Home = ({ userToken }) => {
   const [data, setData] = useState();
   const [userSearch, setUserSearch] = useState("");
   const [count, setCount] = useState();
   const [isLoading, setIsLoading] = useState(true);
-  const [platform, setPlatform] = useState(0);
-  const [tag, setTag] = useState(0);
+  const [platform, setPlatform] = useState("");
+  const [tag, setTag] = useState("");
   const [tagsData, setTagsData] = useState();
+  const [platformsData, setPlatformsData] = useState();
+  const [ordering, setOrdering] = useState("-rating");
+  const [queries, setQueries] = useState(false);
+  const [page, setPage] = useState(1);
 
-  // const [page, setPage] = useState(1);
-  // setPage(1);
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchTags = async () => {
       try {
-        // s
-        const response = await axios.get(
-          `https://gamepad-back.herokuapp.com/?search=${userSearch}&page=1`
-        );
-        setData(response.data.results);
-        setCount(response.data.count);
-        setTimeout(() => {
-          setIsLoading(false);
-        }, 500);
-        // }
-        // else if (tag !== 0) {
-        //   const response = await axios.get(
-        //     `http://localhost:3001/?search=${userSearch}&page=1&tag=${tag}`
-        //   );
-        //   setData(response.data.results);
-        //   setCount(response.data.count);
-        // }
+        const response = await axios.get("http://localhost:3001/tags");
+        setTagsData(response.data.results);
       } catch (error) {
         console.log(error.message);
       }
     };
-    // const fetchTags = async () => {
-    //   try {
-    //     const response = await axios.get("http://localhost:3001/tags");
-    //     setTagsData(response.data.results);
-    // // setTimeout(() => {
-    // setIsLoading(false);
-    // // }, 500);
-    //   } catch (error) {
-    //     console.log(error.message);
-    //   }
-    // };
-    // fetchTags();
+    const fetchPlatforms = async () => {
+      try {
+        const response = await axios.get("http://localhost:3001/platforms");
+        setPlatformsData(response.data.results);
+      } catch (error) {
+        console.log(error.message);
+      }
+    };
+    fetchPlatforms();
+    fetchTags();
+  }, []);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        if (queries) {
+          const response = await axios.get(
+            `http://localhost:3001/?search=${userSearch}&page=${page}&ordering=${ordering}&tags=${tag}&platforms=${platform}`
+          );
+          setData(response.data.results);
+          setCount(response.data.count);
+        } else {
+          const response = await axios.get(
+            `http://localhost:3001/?search=${userSearch}&page=${page}&ordering=-rating`
+          );
+          setData(response.data.results);
+          setCount(response.data.count);
+        }
+        setTimeout(() => {
+          setIsLoading(false);
+        }, 500);
+      } catch (error) {
+        console.log(error.message);
+      }
+    };
     fetchData();
-  }, [userSearch, platform, tag]);
+  }, [userSearch, platform, tag, ordering, queries, page]);
   const limit = count / 20;
   const tab = [];
-  for (let i = 0; i < limit; i++) {
+  for (let i = 1; i < limit; i++) {
     tab.push(i);
   }
+  const indexLastItem = page + 2;
+  const indexFirstItem = indexLastItem - 3;
+  const currentItem = tab.slice(indexFirstItem, indexLastItem);
+  const nextItem = tab.splice(indexFirstItem + 95, indexLastItem);
+  console.log(currentItem);
+  console.log(nextItem);
+  console.log(page);
   return isLoading ? (
     <Loader />
   ) : (
@@ -86,17 +104,18 @@ const Home = ({ userToken }) => {
             <select
               name="platform"
               id="platformSelect"
-              onChange={(e) => setPlatform(e.target.value)}
+              onChange={(e) => {
+                setPlatform(e.target.value);
+              }}
             >
               <option value="">Platform: All</option>
-              <option value="1">PC</option>
-              <option value="2">Playstation</option>
-              <option value="3">Xbox</option>
-              <option value="4">iOS</option>
-              <option value="5">Mac</option>
-              <option value="6">Linux</option>
-              <option value="7">Nintendo</option>
-              <option value="8">Android</option>
+              {platformsData.map((elem) => {
+                return (
+                  <option value={elem.id} key={elem.id}>
+                    {elem.name}
+                  </option>
+                );
+              })}
             </select>
             <select
               name="type"
@@ -106,10 +125,28 @@ const Home = ({ userToken }) => {
               }}
             >
               <option value="">Type: All</option>
-              {/* {tagsData.map((elem) => {
-                return <option value={elem.id}>{elem.name}</option>;
-              })} */}
+              {tagsData.map((elem) => {
+                return (
+                  <option value={elem.id} key={elem.id}>
+                    {elem.name}
+                  </option>
+                );
+              })}
             </select>
+          </div>
+          <div>
+            <select
+              name="sort"
+              id="sortSelect"
+              onChange={(e) => {
+                setOrdering(e.target.value);
+              }}
+            >
+              <option value="-rating">Sort by: Default</option>
+              <option value="-metacritic">Metacritic</option>
+              <option value="name">Name</option>
+            </select>
+            <button onClick={() => setQueries(true)}>GO FILTERS</button>
           </div>
         </div>
       )}
@@ -140,24 +177,39 @@ const Home = ({ userToken }) => {
           );
         })}
       </ul>
-      <ul style={{ display: "flex" }}>
-        {/* {tab.map((elem, index) => {
-          if (elem < page + 100) {
-            for (let i = )
-          }
-          return (
-            elem < page + 10 && (
+      <div style={{ display: "flex" }}>
+        <ul style={{ display: "flex" }}>
+          {currentItem.map((elem, index) => {
+            return (
               <li
-                style={{ marginRight: 10, cursor: "pointer" }}
                 key={index}
-                onClick={() => setPage(elem)}
+                style={{ marginRight: 10 }}
+                onClick={() => {
+                  setPage(elem);
+                }}
               >
                 {elem}
               </li>
-            )
-          );
-        })} */}
-      </ul>
+            );
+          })}
+        </ul>
+        ...
+        <ul style={{ display: "flex" }}>
+          {nextItem.map((elem, index) => {
+            return (
+              <li
+                key={index}
+                style={{ marginLeft: 10 }}
+                onClick={() => {
+                  setPage(elem);
+                }}
+              >
+                {elem}
+              </li>
+            );
+          })}
+        </ul>
+      </div>
     </main>
   );
 };

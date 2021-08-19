@@ -24,7 +24,7 @@ const SignUp = ({ setSignUpModal }) => {
         formData.append("username", values.username);
         formData.append("password", values.password);
         const response = await axios.post(
-          "https://gamepad-back.herokuapp.com/user/signup",
+          "http://localhost:3001/user/signup",
           formData
         );
         console.log(response.data);

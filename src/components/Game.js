@@ -24,13 +24,11 @@ const Game = ({ userToken }) => {
   useEffect(() => {
     const fetchDataGame = async () => {
       try {
-        const response = await axios.get(
-          `https://gamepad-back.herokuapp.com/games/${id}`
-        );
+        const response = await axios.get(`http://localhost:3001/games/${id}`);
         setDataGame(response.data);
         if (userToken) {
           const response2 = await axios.post(
-            "https://gamepad-back.herokuapp.com/user/gamesFav",
+            "http://localhost:3001/user/gamesFav",
             { token: userToken },
             { headers: { Authorization: `Bearer ${userToken}` } }
           );
@@ -57,7 +55,7 @@ const Game = ({ userToken }) => {
   //   e.preventDefault();
   //   try {
   //     await axios.post(
-  //       "https://gamepad-back.herokuapp.com/game/addReview",
+  //       "http://localhost:3001/game/addReview",
   //       {
   //         title,
   //         text: review,
@@ -73,7 +71,7 @@ const Game = ({ userToken }) => {
     const fetchReviews = async () => {
       try {
         const response = await axios.post(
-          "https://gamepad-back.herokuapp.com/game/reviews",
+          "http://localhost:3001/game/reviews",
           { gameId: dataGame.id }
         );
 
@@ -105,7 +103,7 @@ const Game = ({ userToken }) => {
                 onClick={async () => {
                   try {
                     const response = await axios.post(
-                      "https://gamepad-back.herokuapp.com/user/removeFavorites",
+                      "http://localhost:3001/user/removeFavorites",
                       { token: userToken, game: { id: dataGame.id } },
                       { headers: { Authorization: `Bearer ${userToken}` } }
                     );
@@ -127,7 +125,7 @@ const Game = ({ userToken }) => {
                 onClick={async () => {
                   try {
                     const response = await axios.post(
-                      "https://gamepad-back.herokuapp.com/user/addFavorites",
+                      "http://localhost:3001/user/addFavorites",
                       {
                         token: userToken,
                         game: {

@@ -128,6 +128,7 @@ const Game = ({ userToken }) => {
                     console.log(response);
                     setFlag(false);
                   } catch (error) {
+                    alert("You must be login");
                     console.log(error.response);
                   }
                 }}

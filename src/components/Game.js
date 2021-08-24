@@ -94,6 +94,8 @@ const Game = ({ userToken }) => {
     fetchReviews();
   }, [dataGame]);
 
+  let counter = 0;
+  let counterGenres = 0;
   return isLoading ? (
     <Loader />
   ) : (
@@ -195,18 +197,24 @@ const Game = ({ userToken }) => {
                 <span>Platforms</span>
 
                 {dataGame.platforms.map((elem, index) => {
-                  return index < dataGame.platforms.length - 1 ? (
-                    <p key={elem.platform.id}>{elem.platform.name}, </p>
-                  ) : (
-                    <p key={elem.platform.id}>{elem.platform.name}</p>
-                  );
+                  counter++;
+                  if (counter <= 3) {
+                    return index < dataGame.platforms.length - 1 ? (
+                      <p key={elem.platform.id}>{elem.platform.name}, </p>
+                    ) : (
+                      <p key={elem.platform.id}>{elem.platform.name}</p>
+                    );
+                  }
                 })}
               </div>
               <div>
                 <span>Genre</span>
                 {dataGame.genres.length >= 1 ? (
                   dataGame.genres.map((elem) => {
-                    return <p key={elem.id}>{elem.name}</p>;
+                    counterGenres++;
+                    if (counterGenres <= 3) {
+                      return <p key={elem.id}>{elem.name}</p>;
+                    }
                   })
                 ) : (
                   <p>N/A</p>

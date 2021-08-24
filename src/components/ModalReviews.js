@@ -49,19 +49,26 @@ function ModalReviews({
               <h3>Write a review</h3>
               <span onClick={() => setShowModal(false)}>Close</span>
             </div>
-            <form onSubmit={handleSubmit}>
+            <form
+              onSubmit={handleSubmit}
+              style={{ display: "flex", flexDirection: "column" }}
+            >
               <input
                 type="text"
+                style={{ margin: 10 }}
                 placeholder="title"
                 minLength="3"
                 onChange={(e) => {
                   setTitle(e.target.value);
                 }}
               />
-              <input
+              <textarea
                 type="text"
+                style={{ margin: 10, outline: "none" }}
                 placeholder="review"
                 minLength="5"
+                cols="50"
+                rows="5"
                 onChange={(e) => {
                   setReview(e.target.value);
                 }}

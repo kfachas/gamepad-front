@@ -45,8 +45,8 @@ function App() {
         />
       )}
       <Switch>
-        <Route path="collection">
-          <Collection />
+        <Route exact path="/collection">
+          <Collection userToken={userToken} />
         </Route>
         <Route exact path="/games/:id">
           <Game userToken={userToken} />

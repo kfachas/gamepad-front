@@ -4,6 +4,7 @@ import { useState } from "react";
 import axios from "axios";
 const SignIn = ({ setSignInModal, setToken, setHideModal }) => {
   const [values, setValues] = useState({});
+  const [errorMsg, setErrorMsg] = useState("");
   const handleChange = (e, type) => {
     const obj = { ...values };
     obj[type] = e.target.value;
@@ -11,17 +12,23 @@ const SignIn = ({ setSignInModal, setToken, setHideModal }) => {
   };
   console.log(values);
   const handleSubmit = async (e) => {
+    setErrorMsg("");
     e.preventDefault();
     try {
       if (values.password && values.email) {
         const response = await axios.post(
-          "http://localhost:3001/user/login",
+          "https://gamepad-back.herokuapp.com/user/login",
           values
         );
         setToken(response.data.token, response.data);
         setHideModal(true);
       }
     } catch (error) {
+      if (error.response.status === 401) {
+        setErrorMsg("Wrong password/email");
+      } else if (error.response.status === 400) {
+        setErrorMsg("This email doesnt exist");
+      }
       console.log(error.message);
       console.log(error.response);
     }
@@ -48,6 +55,7 @@ const SignIn = ({ setSignInModal, setToken, setHideModal }) => {
           required
           onChange={(e) => handleChange(e, "password")}
         />
+        {errorMsg}
         <input type="submit" />
       </form>
     </div>

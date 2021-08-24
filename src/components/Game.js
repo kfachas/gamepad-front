@@ -5,30 +5,36 @@ import {
 } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import axios from "axios";
-import { useEffect } from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import Loader from "./Loader";
-import GamesItem from "./GamesItem";
+import GameReviews from "./GameReviews";
+import ModalReviews from "./ModalReviews";
+import noImg from "../assets/noImageFound.jpeg";
+
 const Game = ({ userToken }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [dataGame, setDataGame] = useState();
   const [userFavs, setUserFavs] = useState();
   const { id } = useParams();
   const [flag, setFlag] = useState(false);
-  // const [title, setTitle] = useState("");
-  // const [review, setReview] = useState("");
+
   const [listReviews, setListReviews] = useState();
-  console.log(dataGame);
+  const [reviewsAdd, setReviewsAdd] = useState(false);
+  const [showMore, setShowMore] = useState(false);
   const [hideLike, setHideLike] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+
   useEffect(() => {
     const fetchDataGame = async () => {
       try {
-        const response = await axios.get(`http://localhost:3001/games/${id}`);
+        const response = await axios.get(
+          `https://gamepad-back.herokuapp.com/games/${id}`
+        );
         setDataGame(response.data);
         if (userToken) {
           const response2 = await axios.post(
-            "http://localhost:3001/user/gamesFav",
+            "https://gamepad-back.herokuapp.com/user/gamesFav",
             { token: userToken },
             { headers: { Authorization: `Bearer ${userToken}` } }
           );
@@ -51,27 +57,28 @@ const Game = ({ userToken }) => {
     }
   }, [userToken, userFavs, dataGame]);
 
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-  //   try {
-  //     await axios.post(
-  //       "http://localhost:3001/game/addReview",
-  //       {
-  //         title,
-  //         text: review,
-  //         game: dataGame.id,
-  //       },
-  //       { headers: { Authorization: `Bearer ${userToken}` } }
-  //     );
-  //   } catch (error) {
-  //     console.log(error.message);
-  //   }
-  // };
+  if (reviewsAdd) {
+    const fetchReviews = async () => {
+      try {
+        const response = await axios.post(
+          "https://gamepad-back.herokuapp.com/game/reviews",
+          { gameId: dataGame.id }
+        );
+
+        setListReviews(response.data);
+        setReviewsAdd(false);
+      } catch (error) {
+        console.log(error.message);
+      }
+    };
+    fetchReviews();
+  }
+
   useEffect(() => {
     const fetchReviews = async () => {
       try {
         const response = await axios.post(
-          "http://localhost:3001/game/reviews",
+          "https://gamepad-back.herokuapp.com/game/reviews",
           { gameId: dataGame.id }
         );
 
@@ -91,10 +98,21 @@ const Game = ({ userToken }) => {
     <Loader />
   ) : (
     <main>
-      <h3>{dataGame.name}</h3>
-      <div style={{ display: "flex" }}>
+      <ModalReviews
+        setShowModal={setShowModal}
+        showModal={showModal}
+        dataGame={dataGame}
+        userToken={userToken}
+        setReviewsAdd={setReviewsAdd}
+        setListReviews={setListReviews}
+      />
+      <h3 className="gameName">{dataGame.name}</h3>
+      <div style={{ display: "flex" }} className="gameItem">
         <div className="imgGame">
-          <img src={dataGame.background_image} alt={dataGame.name} />
+          <img
+            src={dataGame.background_image ? dataGame.background_image : noImg}
+            alt={dataGame.name}
+          />
         </div>
         <div className="descGame">
           <div style={{ display: "flex" }}>
@@ -103,7 +121,7 @@ const Game = ({ userToken }) => {
                 onClick={async () => {
                   try {
                     const response = await axios.post(
-                      "http://localhost:3001/user/removeFavorites",
+                      "https://gamepad-back.herokuapp.com/user/removeFavorites",
                       { token: userToken, game: { id: dataGame.id } },
                       { headers: { Authorization: `Bearer ${userToken}` } }
                     );
@@ -125,7 +143,7 @@ const Game = ({ userToken }) => {
                 onClick={async () => {
                   try {
                     const response = await axios.post(
-                      "http://localhost:3001/user/addFavorites",
+                      "https://gamepad-back.herokuapp.com/user/addFavorites",
                       {
                         token: userToken,
                         game: {
@@ -141,6 +159,7 @@ const Game = ({ userToken }) => {
                       }
                     );
                     console.log(response);
+
                     setFlag(true);
                   } catch (error) {
                     console.log(error.response);
@@ -154,7 +173,15 @@ const Game = ({ userToken }) => {
               </button>
             )}
 
-            <button>
+            <button
+              onClick={() => {
+                if (userToken) {
+                  setShowModal(true);
+                } else {
+                  alert("You must be logged for add a review");
+                }
+              }}
+            >
               Add a{" "}
               <span>
                 Review <FontAwesomeIcon icon={faCommentAlt} />
@@ -176,9 +203,13 @@ const Game = ({ userToken }) => {
               </div>
               <div>
                 <span>Genre</span>
-                {dataGame.genres.map((elem) => {
-                  return <p key={elem.id}>{elem.name}</p>;
-                })}
+                {dataGame.genres.length >= 1 ? (
+                  dataGame.genres.map((elem) => {
+                    return <p key={elem.id}>{elem.name}</p>;
+                  })
+                ) : (
+                  <p>N/A</p>
+                )}
               </div>
             </div>
             <div>
@@ -188,57 +219,67 @@ const Game = ({ userToken }) => {
               </div>
               <div>
                 <span>Developer</span>
-                {dataGame.developers.map((elem) => {
-                  return <p key={elem.id}>{elem.name}</p>;
-                })}
+                {dataGame.developers.length >= 1 ? (
+                  dataGame.developers.map((elem) => {
+                    return <p key={elem.id}>{elem.name}</p>;
+                  })
+                ) : (
+                  <p>N/A</p>
+                )}
               </div>
             </div>
             <div>
               <div>
                 <span>Publisher</span>
-                {dataGame.publishers.map((elem) => {
-                  return <p key={elem.id}>{elem.name}</p>;
-                })}
+                {dataGame.publishers.length >= 1 ? (
+                  dataGame.publishers.map((elem) => {
+                    return <p key={elem.id}>{elem.name}</p>;
+                  })
+                ) : (
+                  <p>N/A</p>
+                )}
               </div>
               <div>
                 <span>Age rating</span>
-                <p>{dataGame.esrb_rating && dataGame.esrb_rating.id}</p>
+                <p>{dataGame.esrb_rating ? dataGame.esrb_rating.id : "N/A"}</p>
               </div>
             </div>
-            {/* <form onSubmit={handleSubmit}>
-            <input
-              type="text"
-              placeholder="title"
-              minLength="3"
-              onChange={(e) => {
-                setTitle(e.target.value);
-              }}
-            />
-            <input
-              type="text"
-              placeholder="review"
-              minLength="5"
-              onChange={(e) => {
-                setReview(e.target.value);
-              }}
-            />
-            <input type="submit" />
-          </form> */}
           </div>{" "}
-          <p style={{ textOverflow: "ellipsis" }}>{dataGame.description_raw}</p>
+          <p
+            className="test3"
+            style={{
+              WebkitLineClamp: showMore ? 500 : 3,
+            }}
+          >
+            {dataGame.description_raw}
+          </p>
+          {dataGame.description_raw && !showMore ? (
+            <span onClick={() => setShowMore(true)}> Show more</span>
+          ) : (
+            dataGame.description_raw && (
+              <span onClick={() => setShowMore(false)}>Show Less</span>
+            )
+          )}
         </div>
       </div>
-      <ul>
-        <h3>Reviews</h3>
+      <ul
+        style={{
+          display: showMore ? "none" : "flex",
+          alignItems: "center",
+          flexDirection: "column",
+        }}
+      >
+        <h3 style={{ padding: 20, fontSize: 25 }}>Reviews</h3>
         {listReviews.length === 0 && <span>No reviews yet</span>}
         {listReviews.map((elem, index) => {
           return (
-            <GamesItem
+            <GameReviews
               key={index}
               elem={elem}
               userToken={userToken}
               setHideLike={setHideLike}
               hideLike={hideLike}
+              setReviewsAdd={setReviewsAdd}
             />
           );
         })}

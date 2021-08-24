@@ -1,5 +1,7 @@
 import logo from "../assets/game.png";
 import { Link, useHistory } from "react-router-dom";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faUserCircle } from "@fortawesome/free-regular-svg-icons";
 const Header = ({ setHideModal, userToken, setToken, user }) => {
   const history = useHistory();
   return (
@@ -17,12 +19,16 @@ const Header = ({ setHideModal, userToken, setToken, user }) => {
       {userToken && (
         <div>
           <Link to="/collection">
-            {/* <img
-              src={user.picture}
-              alt="profilePicture"
-              style={{ borderRadius: "50%" }}
-            /> */}
-            <span>{user.username}</span>
+            {user.picture ? (
+              <img
+                src={user.picture}
+                alt="profilePicture"
+                style={{ borderRadius: "50%" }}
+              />
+            ) : (
+              <FontAwesomeIcon icon={faUserCircle} />
+            )}
+            <span style={{ marginLeft: 10 }}>{user.username}</span>
           </Link>
         </div>
       )}

@@ -17,13 +17,15 @@ const Home = ({ userToken }) => {
   const [tagsData, setTagsData] = useState();
   const [platformsData, setPlatformsData] = useState();
   const [ordering, setOrdering] = useState("-rating");
-  const [queries, setQueries] = useState(false);
+
   const [page, setPage] = useState(1);
 
   useEffect(() => {
     const fetchTags = async () => {
       try {
-        const response = await axios.get("http://localhost:3001/tags");
+        const response = await axios.get(
+          "https://gamepad-back.herokuapp.com/tags"
+        );
         setTagsData(response.data.results);
       } catch (error) {
         console.log(error.message);
@@ -31,7 +33,9 @@ const Home = ({ userToken }) => {
     };
     const fetchPlatforms = async () => {
       try {
-        const response = await axios.get("http://localhost:3001/platforms");
+        const response = await axios.get(
+          "https://gamepad-back.herokuapp.com/platforms"
+        );
         setPlatformsData(response.data.results);
       } catch (error) {
         console.log(error.message);
@@ -44,19 +48,12 @@ const Home = ({ userToken }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        if (queries) {
-          const response = await axios.get(
-            `http://localhost:3001/?search=${userSearch}&page=${page}&ordering=${ordering}&tags=${tag}&platforms=${platform}`
-          );
-          setData(response.data.results);
-          setCount(response.data.count);
-        } else {
-          const response = await axios.get(
-            `http://localhost:3001/?search=${userSearch}&page=${page}&ordering=-rating`
-          );
-          setData(response.data.results);
-          setCount(response.data.count);
-        }
+        const response = await axios.get(
+          `https://gamepad-back.herokuapp.com/?search=${userSearch}&page=${page}&ordering=${ordering}&tags=${tag}&platforms=${platform}`
+        );
+        setData(response.data.results);
+        setCount(response.data.count);
+
         setTimeout(() => {
           setIsLoading(false);
         }, 500);
@@ -65,19 +62,24 @@ const Home = ({ userToken }) => {
       }
     };
     fetchData();
-  }, [userSearch, platform, tag, ordering, queries, page]);
-  const limit = count / 20;
+  }, [userSearch, platform, tag, ordering, page]);
+  const limit = Math.ceil(count / 20);
+
   const tab = [];
   for (let i = 1; i < limit; i++) {
     tab.push(i);
   }
-  const indexLastItem = page + 2;
-  const indexFirstItem = indexLastItem - 3;
-  const currentItem = tab.slice(indexFirstItem, indexLastItem);
-  const nextItem = tab.splice(indexFirstItem + 95, indexLastItem);
-  console.log(currentItem);
-  console.log(nextItem);
-  console.log(page);
+
+  let currentItem;
+  if (page === 1 || page === 2 || page === 3) {
+    currentItem = tab.slice(2, 5);
+  } else if (page === limit - 1 || page === limit - 2) {
+    currentItem = tab.slice(limit - 5, limit - 3);
+  } else {
+    currentItem = tab.slice(page - 2, page + 1);
+  }
+  const lastItem = tab.slice(limit - 3, limit - 1);
+  const firstItem = tab.slice(0, 2);
   return isLoading ? (
     <Loader />
   ) : (
@@ -98,58 +100,56 @@ const Home = ({ userToken }) => {
         </div>
         <span>Search {count} games</span>
       </div>
-      {userSearch.length > 0 && (
+      <div style={{ display: "flex", justifyContent: "space-between" }}>
         <div>
-          <div>
-            <select
-              name="platform"
-              id="platformSelect"
-              onChange={(e) => {
-                setPlatform(e.target.value);
-              }}
-            >
-              <option value="">Platform: All</option>
-              {platformsData.map((elem) => {
-                return (
-                  <option value={elem.id} key={elem.id}>
-                    {elem.name}
-                  </option>
-                );
-              })}
-            </select>
-            <select
-              name="type"
-              id="typeSelect"
-              onChange={(e) => {
-                setTag(e.target.value);
-              }}
-            >
-              <option value="">Type: All</option>
-              {tagsData.map((elem) => {
-                return (
-                  <option value={elem.id} key={elem.id}>
-                    {elem.name}
-                  </option>
-                );
-              })}
-            </select>
-          </div>
-          <div>
-            <select
-              name="sort"
-              id="sortSelect"
-              onChange={(e) => {
-                setOrdering(e.target.value);
-              }}
-            >
-              <option value="-rating">Sort by: Default</option>
-              <option value="-metacritic">Metacritic</option>
-              <option value="name">Name</option>
-            </select>
-            <button onClick={() => setQueries(true)}>GO FILTERS</button>
-          </div>
+          <select
+            name="platform"
+            id="platformSelect"
+            onChange={(e) => {
+              setPlatform(e.target.value);
+            }}
+          >
+            <option value="">Platform: All</option>
+            {platformsData.map((elem) => {
+              return (
+                <option value={elem.id} key={elem.id}>
+                  {elem.name}
+                </option>
+              );
+            })}
+          </select>
+          <select
+            name="type"
+            id="typeSelect"
+            onChange={(e) => {
+              setTag(e.target.value);
+            }}
+          >
+            <option value="">Type: All</option>
+            {tagsData.map((elem) => {
+              return (
+                <option value={elem.id} key={elem.id}>
+                  {elem.name}
+                </option>
+              );
+            })}
+          </select>
         </div>
-      )}
+        <div>
+          <select
+            name="sort"
+            id="sortSelect"
+            onChange={(e) => {
+              setOrdering(e.target.value);
+            }}
+          >
+            <option value="-rating">Sort by: Default</option>
+            <option value="-metacritic">Metacritic</option>
+            <option value="name">Name</option>
+          </select>
+        </div>
+      </div>
+
       <ul className="listGames">
         {data.map((elem) => {
           return (
@@ -177,13 +177,42 @@ const Home = ({ userToken }) => {
           );
         })}
       </ul>
-      <div style={{ display: "flex" }}>
+      <div className="pagination">
+        <span
+          style={{ marginRight: 10 }}
+          onClick={() => {
+            if (page > 10) {
+              setPage(page - 10);
+            }
+          }}
+        >
+          {"<"}
+        </span>
+        <span
+          style={{ marginRight: 10 }}
+          onClick={() => {
+            if (page > 100) {
+              setPage(page - 100);
+            }
+          }}
+        >
+          {"<<"}
+        </span>
+        <span
+          onClick={() => {
+            if (page > 1000) {
+              setPage(page - 1000);
+            }
+          }}
+        >
+          {"<<<"}
+        </span>
         <ul style={{ display: "flex" }}>
-          {currentItem.map((elem, index) => {
+          {firstItem.map((elem, index) => {
             return (
               <li
                 key={index}
-                style={{ marginRight: 10 }}
+                style={{ margin: 10 }}
                 onClick={() => {
                   setPage(elem);
                 }}
@@ -195,11 +224,11 @@ const Home = ({ userToken }) => {
         </ul>
         ...
         <ul style={{ display: "flex" }}>
-          {nextItem.map((elem, index) => {
+          {currentItem.map((elem, index) => {
             return (
               <li
                 key={index}
-                style={{ marginLeft: 10 }}
+                style={{ margin: 10 }}
                 onClick={() => {
                   setPage(elem);
                 }}
@@ -209,6 +238,51 @@ const Home = ({ userToken }) => {
             );
           })}
         </ul>
+        ...
+        <ul style={{ display: "flex" }}>
+          {lastItem.map((elem, index) => {
+            return (
+              <li
+                key={index}
+                style={{ margin: 10 }}
+                onClick={() => {
+                  setPage(elem);
+                }}
+              >
+                {elem}
+              </li>
+            );
+          })}
+        </ul>
+        <span
+          onClick={() => {
+            if (page < limit - 1000) {
+              setPage(page + 1000);
+            }
+          }}
+        >
+          {">>>"}
+        </span>{" "}
+        <span
+          style={{ marginLeft: 10 }}
+          onClick={() => {
+            if (page < limit - 100) {
+              setPage(page + 100);
+            }
+          }}
+        >
+          {">>"}
+        </span>{" "}
+        <span
+          style={{ marginLeft: 10 }}
+          onClick={() => {
+            if (page < limit - 10) {
+              setPage(page + 10);
+            }
+          }}
+        >
+          {">"}
+        </span>
       </div>
     </main>
   );

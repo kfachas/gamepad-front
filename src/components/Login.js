@@ -12,6 +12,7 @@ import {
 const Login = ({ setHideModal, setToken }) => {
   const [signUpModal, setSignUpModal] = useState(false);
   const [signInModal, setSignInModal] = useState(false);
+
   return (
     <div className="displayModal">
       <div className="chooseDiv">

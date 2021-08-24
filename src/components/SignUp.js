@@ -7,16 +7,39 @@ const SignUp = ({ setSignUpModal }) => {
   const [values, setValues] = useState({});
   const [confirmPassword, setConfirmPassword] = useState("");
   const [file, setFile] = useState();
+  const [errorMsg, setErrorMsg] = useState("");
   const handleChange = (e, type) => {
     const obj = { ...values };
     obj[type] = e.target.value;
     setValues(obj);
   };
-  console.log(values);
-  console.log(confirmPassword);
+  const handleKeyDown = (e) => {
+    if (e.key === " ") {
+      e.preventDefault();
+    }
+  };
+  const regexSpecialChar = /[^A-Za-z0-9_|\s]/g;
+  const regexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setErrorMsg("");
     try {
+      const searchSpecialChar = values.password.match(regexSpecialChar);
+      const testEmail = values.email.match(regexEmail);
+      if (!testEmail) {
+        return setErrorMsg("Not a correct email");
+      }
+      if (
+        values.password.charAt(0) !== values.password.charAt(0).toUpperCase()
+      ) {
+        return setErrorMsg(
+          "The first character of your password must be a capital letter"
+        );
+      }
+      if (!searchSpecialChar) {
+        return setErrorMsg("Need one special character in ur password");
+      }
+
       if (confirmPassword === values.password) {
         const formData = new FormData();
         formData.append("picture", file);
@@ -24,12 +47,13 @@ const SignUp = ({ setSignUpModal }) => {
         formData.append("username", values.username);
         formData.append("password", values.password);
         const response = await axios.post(
-          "http://localhost:3001/user/signup",
+          "https://gamepad-back.herokuapp.com/user/signup",
           formData
         );
+        alert("You can now sign in !");
         console.log(response.data);
       } else {
-        alert("Password not similair");
+        setErrorMsg("Password not correct");
       }
     } catch (error) {
       console.log(error.message);
@@ -58,6 +82,7 @@ const SignUp = ({ setSignUpModal }) => {
           <span>Email</span>
           <input
             type="mail"
+            onKeyDown={handleKeyDown}
             placeholder="email@liam.com"
             required
             onChange={(e) => handleChange(e, "email")}
@@ -67,6 +92,7 @@ const SignUp = ({ setSignUpModal }) => {
           <span>Username</span>
           <input
             type="fname"
+            onKeyDown={handleKeyDown}
             placeholder="Emanresu"
             required
             minLength="4"
@@ -77,6 +103,7 @@ const SignUp = ({ setSignUpModal }) => {
           <span>Password</span>
           <input
             type="password"
+            onKeyDown={handleKeyDown}
             placeholder="drowssap"
             required
             minLength="6"
@@ -87,6 +114,7 @@ const SignUp = ({ setSignUpModal }) => {
           <span>Confirm password</span>
           <input
             type="password"
+            onKeyDown={handleKeyDown}
             placeholder="drowssap"
             required
             minLength="6"
@@ -95,6 +123,7 @@ const SignUp = ({ setSignUpModal }) => {
             }}
           />
         </div>
+        <span style={{ fontSize: 13, textAlign: "center" }}>{errorMsg}</span>
         <input className="submitBtn" type="submit" />
       </form>
     </div>

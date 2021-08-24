@@ -168,10 +168,13 @@ main {
 .descGame {
   padding: 10px;
   height: 300px;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
-
+.test3 {
+  overflow: hidden;
+  display: -webkit-box;
+  /* -webkit-line-clamp: 3; */
+  -webkit-box-orient: vertical;
+}
 .descGame button {
   border: none;
   background-color: inherit;
@@ -234,6 +237,43 @@ main {
 
 .reviewText {
   width: 100%;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.pagination li {
+  cursor: pointer;
+  transition: 0.2s;
+}
+.pagination li:hover {
+  opacity: 0.8;
+  color: #ff4655 !important;
+}
+
+.pagination span {
+  color: #ff4655;
+  cursor: pointer;
+  transition: 0.3s;
+}
+.pagination span:hover {
+  color: white;
+}
+
+/* Collection */
+
+.userFavs img {
+  height: 250px;
+  width: 200px;
+  object-position: center;
+  object-fit: cover;
+}
+
+.userFavs li {
+  display: flex;
+  flex-direction: column;
 }
 
 footer {
@@ -501,4 +541,37 @@ footer {
   animation: load 1.2s infinite 0s ease-in-out;
   animation-direction: alternate;
   text-shadow: 0 0 1px white;
+}
+
+.modReviews {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.modBloc {
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  background: #434448;
+  width: 50%;
+  height: 300px;
+  border-radius: 20px;
+  padding: 20px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+@media only screen and (max-width: 1200px) {
+  .gameItem {
+    flex-direction: column;
+    align-items: center;
+  }
+  .gameName {
+    text-align: center;
+  }
 }

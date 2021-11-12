@@ -2,8 +2,10 @@ import logo from "../assets/game.png";
 import { Link, useHistory } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUserCircle } from "@fortawesome/free-regular-svg-icons";
-const Header = ({ setHideModal, userToken, setToken, user }) => {
+const Header = ({ setHideModal, isConnected }) => {
   const history = useHistory();
+
+
   return (
     <header>
       <div className="logoHeader">
@@ -16,23 +18,17 @@ const Header = ({ setHideModal, userToken, setToken, user }) => {
         />
         <span>Gamepad</span>
       </div>
-      {userToken && (
+      {isConnected && (
         <div>
           <Link to="/collection">
-            {user.picture ? (
-              <img
-                src={user.picture}
-                alt="profilePicture"
-                style={{ borderRadius: "50%" }}
-              />
-            ) : (
+
+      
               <FontAwesomeIcon icon={faUserCircle} />
-            )}
-            <span style={{ marginLeft: 10 }}>{user.username}</span>
+          
           </Link>
         </div>
       )}
-      {!userToken ? (
+      {!isConnected ? (
         <button
           onClick={() => {
             setHideModal(false);
@@ -42,7 +38,9 @@ const Header = ({ setHideModal, userToken, setToken, user }) => {
           Login
         </button>
       ) : (
-        <button style={{ color: "white" }} onClick={() => setToken(null)}>
+        <button style={{ color: "white" }} 
+        // onClick={() => onSetUser(null)}
+        >
           Disconnect
         </button>
       )}

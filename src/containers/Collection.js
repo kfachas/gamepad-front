@@ -2,7 +2,11 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import Loader from "../components/Loader";
 import { Link } from "react-router-dom";
-const Collection = ({ userToken }) => {
+
+import { connect } from "react-redux";
+import { compose } from "redux";
+
+const Collection = ({ currentUser }) => {
   const [userFavs, setUserFavs] = useState();
   const [isLoading, setIsLoading] = useState(true);
   useEffect(() => {
@@ -10,10 +14,10 @@ const Collection = ({ userToken }) => {
       try {
         const response = await axios.post(
           "https://gamepad-back.herokuapp.com/user/gamesFav",
-          { token: userToken },
+          { token: currentUser.token },
           {
             headers: {
-              Authorization: `Bearer ${userToken}`,
+              Authorization: `Bearer ${currentUser.token}`,
             },
           }
         );
@@ -25,15 +29,15 @@ const Collection = ({ userToken }) => {
       }
     };
     fetchFavs();
-  }, [userToken]);
+  }, [currentUser]);
   const updateFavs = async () => {
     try {
       const response = await axios.post(
         "https://gamepad-back.herokuapp.com/user/gamesFav",
-        { token: userToken },
+        { token: currentUser.token },
         {
           headers: {
-            Authorization: `Bearer ${userToken}`,
+            Authorization: `Bearer ${currentUser.token}`,
           },
         }
       );
@@ -65,7 +69,7 @@ const Collection = ({ userToken }) => {
                       const response = await axios.post(
                         "https://gamepad-back.herokuapp.com/user/removeFavorites",
                         { game: { id: elem.id } },
-                        { headers: { Authorization: `Bearer ${userToken}` } }
+                        { headers: { Authorization: `Bearer ${currentUser.token}` } }
                       );
                       updateFavs();
                       console.log(response);
@@ -85,4 +89,10 @@ const Collection = ({ userToken }) => {
   );
 };
 
-export default Collection;
+const mapStateToProps = (state) => {
+  return {
+    currentUser: state.userState.currentUser
+  }
+}
+
+export default compose(connect(mapStateToProps))(Collection);

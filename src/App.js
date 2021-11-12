@@ -5,59 +5,67 @@ import Header from "./containers/Header";
 import Footer from "./containers/Footer";
 import Collection from "./containers/Collection";
 import Login from "./components/Login";
-import { useState } from "react";
-import Game from "./components/Game";
-import Cookies from "js-cookie";
-function App() {
+import { useEffect, useState } from "react";
+import Game from "./containers/Game";
+
+import Grid from '@mui/material/Grid';
+import { connect } from "react-redux";
+import { compose } from "redux";
+
+function App({currentUser, onSetUser}) {
+  
   const [hideModal, setHideModal] = useState(true);
-  const [userToken, setUserToken] = useState();
-  const [user, setUser] = useState({});
-  const setToken = (token, userInfo) => {
-    if (token) {
-      Cookies.set("token", token);
-      setUserToken(token);
+
+
+
+  useEffect(() => {
+    if (currentUser) {
+      localStorage.setItem("session", JSON.stringify(currentUser))
     } else {
-      Cookies.remove("token");
-      setUserToken(null);
+      const data = JSON.parse(localStorage.getItem("session"))
+      onSetUser(data, data.uid)
     }
-    if (userInfo) {
-      const obj = { ...user };
-      obj.picture = userInfo.account.avatar;
-      obj.username = userInfo.account.username;
-      setUser(obj);
-    } else {
-      setUser(null);
-    }
-  };
+  }, [currentUser])
+
+
   return (
-    <Router>
+      <Router>
+         <Grid container>
+               <Grid item xs={12}>
       <Header
-        setHideModal={setHideModal}
-        userToken={userToken}
-        setToken={setToken}
-        user={user}
+        setHideModal={setHideModal} 
+        isConnected={localStorage.getItem("session")}
+        currentUser={currentUser}
       />
+      </Grid>
       {!hideModal && (
         <Login
+        setHideModal={setHideModal}
           hideModal={hideModal}
-          setHideModal={setHideModal}
-          setToken={setToken}
         />
       )}
       <Switch>
-        <Route exact path="/collection">
-          <Collection userToken={userToken} />
-        </Route>
-        <Route exact path="/games/:id">
-          <Game userToken={userToken} />
-        </Route>
-        <Route exact path="/">
-          <Home userToken={userToken} />
-        </Route>
+        <Route exact path="/collection" component={Collection} />
+   
+        <Route exact path="/games/:id" component={Game} />
+        <Route exact path="/" component={Home} />
       </Switch>
+      <Grid item xs={12}>
       <Footer />
+      </Grid>
+      </Grid>
     </Router>
   );
 }
 
-export default App;
+const mapStateToProps = (state) => {
+  return {
+    currentUser: state.userState.currentUser
+  }
+}
+
+const mapDispatchToProps = (dispatch) => ({
+  onSetUser: (user, uid) => dispatch({type: "USER_SET", user, uid})
+})
+
+export default compose(connect(mapStateToProps, mapDispatchToProps))(App);

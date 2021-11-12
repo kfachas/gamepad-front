@@ -7,7 +7,7 @@ import { faSearch } from "@fortawesome/free-solid-svg-icons";
 import { Link } from "react-router-dom";
 import Loader from "../components/Loader";
 
-const Home = ({ userToken }) => {
+const Home = () => {
   const [data, setData] = useState();
   const [userSearch, setUserSearch] = useState("");
   const [count, setCount] = useState();

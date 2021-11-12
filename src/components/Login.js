@@ -9,7 +9,9 @@ import {
   faBookmark,
   faCommentAlt,
 } from "@fortawesome/free-regular-svg-icons";
-const Login = ({ setHideModal, setToken }) => {
+import { connect } from "react-redux";
+import { compose } from "redux";
+const Login = ({ setHideModal, setToken, onSetUser }) => {
   const [signUpModal, setSignUpModal] = useState(false);
   const [signInModal, setSignInModal] = useState(false);
 
@@ -85,6 +87,7 @@ const Login = ({ setHideModal, setToken }) => {
             <SignIn
               setSignInModal={setSignInModal}
               setToken={setToken}
+              onSetUser={onSetUser}
               setHideModal={setHideModal}
             />
           )}{" "}
@@ -95,4 +98,8 @@ const Login = ({ setHideModal, setToken }) => {
   );
 };
 
-export default Login;
+const mapDispatchToProps = (dispatch) => ({
+  onSetUser: (user, uid) => dispatch({type: "USER_SET", user, uid})
+})
+
+export default compose(connect(null, mapDispatchToProps))(Login);

@@ -3,21 +3,22 @@ import {
   faBookmark as bookmarkReg,
   faCommentAlt,
 } from "@fortawesome/free-regular-svg-icons";
+import { withRouter } from "react-router";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import Loader from "./Loader";
-import GameReviews from "./GameReviews";
-import ModalReviews from "./ModalReviews";
+import Loader from "../components/Loader";
+import GameReviews from "../components/GameReviews";
+import ModalReviews from "../components/ModalReviews";
 import noImg from "../assets/noImageFound.jpeg";
+import { connect } from "react-redux";
+import { compose } from "redux";
+import { Grid } from "@mui/material";
 
-const Game = ({ userToken }) => {
+const Game = ({ currentUser, match }) => {
   const [isLoading, setIsLoading] = useState(true);
-  const [dataGame, setDataGame] = useState();
-  const [userFavs, setUserFavs] = useState();
-  const { id } = useParams();
-  const [flag, setFlag] = useState(false);
+  const [dataGame, setDataGame] = useState(null);
+  const [userFavs, setUserFavs] = useState();  const [flag, setFlag] = useState(false);
 
   const [listReviews, setListReviews] = useState();
   const [reviewsAdd, setReviewsAdd] = useState(false);
@@ -26,36 +27,43 @@ const Game = ({ userToken }) => {
   const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
-    const fetchDataGame = async () => {
-      try {
-        const response = await axios.get(
-          `https://gamepad-back.herokuapp.com/games/${id}`
+
+    if (match.params.id){
+    fetchDataGame(match.params.id);}
+
+  }, [currentUser, match.params.id]);
+
+
+  const fetchDataGame = async (id) => {
+    setIsLoading(true)
+    try {
+      const response = await axios.get(
+        `https://gamepad-back.herokuapp.com/games/${id}`
+      );
+      setDataGame(response.data);
+      if (currentUser) {
+        const response2 = await axios.post(
+          "https://gamepad-back.herokuapp.com/user/findGameFav",
+          { token: currentUser.token, gameId: id },
+          { headers: { Authorization: `Bearer ${currentUser.token}` } }
         );
-        setDataGame(response.data);
-        if (userToken) {
-          const response2 = await axios.post(
-            "https://gamepad-back.herokuapp.com/user/gamesFav",
-            { token: userToken },
-            { headers: { Authorization: `Bearer ${userToken}` } }
-          );
-          setUserFavs(response2.data);
-        }
-      } catch (error) {
-        console.log(error);
+        setUserFavs(response2.data);
       }
-    };
-    fetchDataGame();
-  }, [id, userToken]);
+    } catch (error) {
+      console.log(error);
+    }
+    setIsLoading(false)
+  };
 
   useEffect(() => {
-    if (userToken && userFavs) {
+    if (currentUser && userFavs) {
       for (let i = 0; i < userFavs.length; i++) {
         if (userFavs[i].id === dataGame.id) {
           setFlag(true);
         }
       }
     }
-  }, [userToken, userFavs, dataGame]);
+  }, [currentUser, userFavs, dataGame]);
 
   if (reviewsAdd) {
     const fetchReviews = async () => {
@@ -99,15 +107,15 @@ const Game = ({ userToken }) => {
   return isLoading ? (
     <Loader />
   ) : (
-    <main>
-      <ModalReviews
+    <Grid container>
+      {showModal && <ModalReviews
         setShowModal={setShowModal}
         showModal={showModal}
         dataGame={dataGame}
-        userToken={userToken}
+        userToken={currentUser.token}
         setReviewsAdd={setReviewsAdd}
         setListReviews={setListReviews}
-      />
+      /> }
       <h3 className="gameName">{dataGame.name}</h3>
       <div style={{ display: "flex" }} className="gameItem">
         <div className="imgGame">
@@ -124,8 +132,8 @@ const Game = ({ userToken }) => {
                   try {
                     const response = await axios.post(
                       "https://gamepad-back.herokuapp.com/user/removeFavorites",
-                      { token: userToken, game: { id: dataGame.id } },
-                      { headers: { Authorization: `Bearer ${userToken}` } }
+                      { token: currentUser.token, game: { id: dataGame.id } },
+                      { headers: { Authorization: `Bearer ${currentUser.token}` } }
                     );
                     console.log(response);
                     setFlag(false);
@@ -147,7 +155,7 @@ const Game = ({ userToken }) => {
                     const response = await axios.post(
                       "https://gamepad-back.herokuapp.com/user/addFavorites",
                       {
-                        token: userToken,
+                        token: currentUser.token,
                         game: {
                           name: dataGame.name,
                           image: dataGame.background_image,
@@ -156,7 +164,7 @@ const Game = ({ userToken }) => {
                       },
                       {
                         headers: {
-                          Authorization: `Bearer ${userToken}`,
+                          Authorization: `Bearer ${currentUser.token}`,
                         },
                       }
                     );
@@ -178,7 +186,7 @@ const Game = ({ userToken }) => {
 
             <button
               onClick={() => {
-                if (userToken) {
+                if (currentUser) {
                   setShowModal(true);
                 } else {
                   alert("You must be logged for add a review");
@@ -205,6 +213,7 @@ const Game = ({ userToken }) => {
                       <p key={elem.platform.id}>{elem.platform.name}</p>
                     );
                   }
+                  return ""
                 })}
               </div>
               <div>
@@ -215,6 +224,7 @@ const Game = ({ userToken }) => {
                     if (counterGenres <= 3) {
                       return <p key={elem.id}>{elem.name}</p>;
                     }
+                    return ""
                   })
                 ) : (
                   <p>N/A</p>
@@ -285,7 +295,7 @@ const Game = ({ userToken }) => {
             <GameReviews
               key={index}
               elem={elem}
-              userToken={userToken}
+              userToken={currentUser.token}
               setHideLike={setHideLike}
               hideLike={hideLike}
               setReviewsAdd={setReviewsAdd}
@@ -293,8 +303,14 @@ const Game = ({ userToken }) => {
           );
         })}
       </ul>
-    </main>
+    </Grid>
   );
 };
 
-export default Game;
+const mapStateToProps = (state) => {
+  return {
+    currentUser: state.userState.currentUser,
+  }
+}
+
+export default compose(withRouter, connect(mapStateToProps))(Game);

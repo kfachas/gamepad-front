@@ -2,7 +2,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 import { useState } from "react";
 import axios from "axios";
-const SignIn = ({ setSignInModal, setToken, setHideModal }) => {
+const SignIn = ({ setSignInModal, setHideModal, onSetUser }) => {
   const [values, setValues] = useState({});
   const [errorMsg, setErrorMsg] = useState("");
   const handleChange = (e, type) => {
@@ -11,6 +11,8 @@ const SignIn = ({ setSignInModal, setToken, setHideModal }) => {
     setValues(obj);
   };
   console.log(values);
+
+
   const handleSubmit = async (e) => {
     setErrorMsg("");
     e.preventDefault();
@@ -20,17 +22,11 @@ const SignIn = ({ setSignInModal, setToken, setHideModal }) => {
           "https://gamepad-back.herokuapp.com/user/login",
           values
         );
-        setToken(response.data.token, response.data);
+        onSetUser(response.data, response.data._id);
         setHideModal(true);
       }
     } catch (error) {
-      if (error.response.status === 401) {
-        setErrorMsg("Wrong password/email");
-      } else if (error.response.status === 400) {
-        setErrorMsg("This email doesnt exist");
-      }
-      console.log(error.message);
-      console.log(error.response);
+      console.log(error);
     }
   };
   return (

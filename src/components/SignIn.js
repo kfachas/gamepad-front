@@ -10,8 +10,6 @@ const SignIn = ({ setSignInModal, setHideModal, onSetUser }) => {
     obj[type] = e.target.value;
     setValues(obj);
   };
-  console.log(values);
-
 
   const handleSubmit = async (e) => {
     setErrorMsg("");
@@ -19,14 +17,14 @@ const SignIn = ({ setSignInModal, setHideModal, onSetUser }) => {
     try {
       if (values.password && values.email) {
         const response = await axios.post(
-          "https://gamepad-back.herokuapp.com/user/login",
+          "http://localhost:3310/user/login",
           values
         );
         onSetUser(response.data, response.data._id);
         setHideModal(true);
       }
     } catch (error) {
-      console.log(error);
+      console.log(error.message);
     }
   };
   return (

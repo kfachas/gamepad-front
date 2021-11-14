@@ -1,316 +1,417 @@
-import { faBookmark } from "@fortawesome/free-solid-svg-icons";
-import {
-  faBookmark as bookmarkReg,
-  faCommentAlt,
-} from "@fortawesome/free-regular-svg-icons";
 import { withRouter } from "react-router";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import Loader from "../components/Loader";
 import GameReviews from "../components/GameReviews";
-import ModalReviews from "../components/ModalReviews";
+import DialogAddReview from "../components/DialogAddReview";
 import noImg from "../assets/noImageFound.jpeg";
 import { connect } from "react-redux";
 import { compose } from "redux";
-import { Grid } from "@mui/material";
+import {
+  Button,
+  Grid,
+  IconButton,
+  Typography,
+  useMediaQuery,
+} from "@mui/material";
+import AddCommentRoundedIcon from "@mui/icons-material/AddCommentRounded";
+import BookmarkBorderRoundedIcon from "@mui/icons-material/BookmarkBorderRounded";
+import BookmarkRoundedIcon from "@mui/icons-material/BookmarkRounded";
+import { makeStyles } from "@mui/styles";
+import { Box, useTheme } from "@mui/system";
+import ReviewDialog from "../components/ReviewDialog";
+
+import KeyboardArrowUpRoundedIcon from "@mui/icons-material/KeyboardArrowUpRounded";
+import KeyboardArrowDownRoundedIcon from "@mui/icons-material/KeyboardArrowDownRounded";
+
+const useStyles = makeStyles(() => ({
+  gamePicture: {
+    height: "100%",
+    width: "100%",
+  },
+  inFav: {
+    border: "1px solid green",
+    color: "white",
+  },
+  notInFav: {
+    border: "1px solid lightgray",
+    color: "white",
+  },
+  addReviewBtn: {
+    border: "1px solid lightgray",
+    color: "white",
+  },
+  container: {
+    padding: 50,
+  },
+}));
 
 const Game = ({ currentUser, match }) => {
+  const classes = useStyles();
   const [isLoading, setIsLoading] = useState(true);
-  const [dataGame, setDataGame] = useState(null);
-  const [userFavs, setUserFavs] = useState();  const [flag, setFlag] = useState(false);
-
-  const [listReviews, setListReviews] = useState();
-  const [reviewsAdd, setReviewsAdd] = useState(false);
-  const [showMore, setShowMore] = useState(false);
-  const [hideLike, setHideLike] = useState(true);
+  const [dataGame, setDataGame] = useState({});
+  const [alreadyInFav, setAlreadyInFav] = useState(false);
+  const [listReviews, setListReviews] = useState([]);
+  const [openReviewDialog, setOpenReviewDialog] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [selectedReview, setSelectedReview] = useState(null);
+  const [hideBtnDescription, setHideBtnDescription] = useState(false);
+
+  const theme = useTheme();
+
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   useEffect(() => {
-
-    if (match.params.id){
-    fetchDataGame(match.params.id);}
-
+    if (match.params.id && currentUser) {
+      fetchDataGame(match.params.id, currentUser.token);
+    }
   }, [currentUser, match.params.id]);
 
-
-  const fetchDataGame = async (id) => {
-    setIsLoading(true)
+  const fetchDataGame = async (id, token) => {
+    setIsLoading(true);
     try {
-      const response = await axios.get(
-        `https://gamepad-back.herokuapp.com/games/${id}`
-      );
-      setDataGame(response.data);
-      if (currentUser) {
+      const response = await axios.get(`http://localhost:3310/games/${id}`);
+
+      setDataGame({ ...response.data, id });
+
+      if (token) {
         const response2 = await axios.post(
-          "https://gamepad-back.herokuapp.com/user/findGameFav",
+          "http://localhost:3310/user/findGameFav",
           { token: currentUser.token, gameId: id },
-          { headers: { Authorization: `Bearer ${currentUser.token}` } }
+          { headers: { Authorization: `Bearer ${token}` } }
         );
-        setUserFavs(response2.data);
+        setAlreadyInFav(response2.data.isAlreadyInFav);
       }
     } catch (error) {
       console.log(error);
     }
-    setIsLoading(false)
+    setIsLoading(false);
   };
 
   useEffect(() => {
-    if (currentUser && userFavs) {
-      for (let i = 0; i < userFavs.length; i++) {
-        if (userFavs[i].id === dataGame.id) {
-          setFlag(true);
-        }
+    const fetchReviews = async () => {
+      try {
+        const response = await axios.post(
+          "http://localhost:3310/game/reviews",
+          { gameId: dataGame.id }
+        );
+
+        setListReviews(response.data);
+      } catch (error) {
+        console.log(error.message);
       }
+    };
+    if (dataGame) {
+      fetchReviews();
     }
-  }, [currentUser, userFavs, dataGame]);
-
-  if (reviewsAdd) {
-    const fetchReviews = async () => {
-      try {
-        const response = await axios.post(
-          "https://gamepad-back.herokuapp.com/game/reviews",
-          { gameId: dataGame.id }
-        );
-
-        setListReviews(response.data);
-        setReviewsAdd(false);
-      } catch (error) {
-        console.log(error.message);
-      }
-    };
-    fetchReviews();
-  }
-
-  useEffect(() => {
-    const fetchReviews = async () => {
-      try {
-        const response = await axios.post(
-          "https://gamepad-back.herokuapp.com/game/reviews",
-          { gameId: dataGame.id }
-        );
-
-        setListReviews(response.data);
-        console.log(response.data);
-        setTimeout(() => {
-          setIsLoading(false);
-        }, 1000);
-      } catch (error) {
-        console.log(error.message);
-      }
-    };
-    fetchReviews();
   }, [dataGame]);
 
-  let counter = 0;
-  let counterGenres = 0;
+  const handleClickAction = async (action) => {
+    try {
+      const response = await axios.post(
+        "http://localhost:3310/user/updateFavorites",
+        { action, game: dataGame },
+        { headers: { Authorization: `Bearer ${currentUser.token}` } }
+      );
+      console.log(response);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleClickReview = (review) => {
+    setSelectedReview(review);
+    setOpenReviewDialog(true);
+  };
+
+  const handleCloseReviewDialog = () => {
+    setSelectedReview(null);
+    setOpenReviewDialog(false);
+  };
+
+  useEffect(() => {
+    const element = document.getElementById("description");
+    if (dataGame.description_raw && element) {
+      const isOverflown =
+        element.scrollHeight > element.clientHeight ||
+        element.scrollWidth > element.clientWidth;
+      if (!isOverflown) {
+        setHideBtnDescription(true);
+      }
+    }
+  }, [dataGame.description_raw]);
+
   return isLoading ? (
     <Loader />
   ) : (
-    <Grid container>
-      {showModal && <ModalReviews
-        setShowModal={setShowModal}
-        showModal={showModal}
-        dataGame={dataGame}
-        userToken={currentUser.token}
-        setReviewsAdd={setReviewsAdd}
-        setListReviews={setListReviews}
-      /> }
-      <h3 className="gameName">{dataGame.name}</h3>
-      <div style={{ display: "flex" }} className="gameItem">
-        <div className="imgGame">
-          <img
-            src={dataGame.background_image ? dataGame.background_image : noImg}
-            alt={dataGame.name}
-          />
-        </div>
-        <div className="descGame">
-          <div style={{ display: "flex" }}>
-            {flag ? (
-              <button
-                onClick={async () => {
-                  try {
-                    const response = await axios.post(
-                      "https://gamepad-back.herokuapp.com/user/removeFavorites",
-                      { token: currentUser.token, game: { id: dataGame.id } },
-                      { headers: { Authorization: `Bearer ${currentUser.token}` } }
-                    );
-                    console.log(response);
-                    setFlag(false);
-                  } catch (error) {
-                    console.log(error.response);
-                  }
-                }}
-              >
-                Saved to{" "}
-                <div>
-                  <span style={{ color: "green" }}> Collection </span>{" "}
-                  <FontAwesomeIcon icon={faBookmark} />
-                </div>
-              </button>
-            ) : (
-              <button
-                onClick={async () => {
-                  try {
-                    const response = await axios.post(
-                      "https://gamepad-back.herokuapp.com/user/addFavorites",
-                      {
-                        token: currentUser.token,
-                        game: {
-                          name: dataGame.name,
-                          image: dataGame.background_image,
-                          id: dataGame.id,
-                        },
-                      },
-                      {
-                        headers: {
-                          Authorization: `Bearer ${currentUser.token}`,
-                        },
-                      }
-                    );
-                    console.log(response);
-
-                    setFlag(true);
-                  } catch (error) {
-                    alert("You must be login");
-                    console.log(error.response);
-                  }
-                }}
-              >
-                Save to{" "}
-                <div>
-                  Collection <FontAwesomeIcon icon={bookmarkReg} />
-                </div>
-              </button>
-            )}
-
-            <button
-              onClick={() => {
-                if (currentUser) {
-                  setShowModal(true);
-                } else {
-                  alert("You must be logged for add a review");
-                }
-              }}
-            >
-              Add a{" "}
-              <span>
-                Review <FontAwesomeIcon icon={faCommentAlt} />
-              </span>
-            </button>
-          </div>
-          <div className="categ">
-            <div>
-              <div>
-                <span>Platforms</span>
-
-                {dataGame.platforms.map((elem, index) => {
-                  counter++;
-                  if (counter <= 3) {
-                    return index < dataGame.platforms.length - 1 ? (
-                      <p key={elem.platform.id}>{elem.platform.name}, </p>
-                    ) : (
-                      <p key={elem.platform.id}>{elem.platform.name}</p>
-                    );
-                  }
-                  return ""
-                })}
-              </div>
-              <div>
-                <span>Genre</span>
-                {dataGame.genres.length >= 1 ? (
-                  dataGame.genres.map((elem) => {
-                    counterGenres++;
-                    if (counterGenres <= 3) {
-                      return <p key={elem.id}>{elem.name}</p>;
-                    }
-                    return ""
-                  })
-                ) : (
-                  <p>N/A</p>
-                )}
-              </div>
-            </div>
-            <div>
-              <div>
-                <span>Released date</span>
-                <p>{dataGame.released}</p>
-              </div>
-              <div>
-                <span>Developer</span>
-                {dataGame.developers.length >= 1 ? (
-                  dataGame.developers.map((elem) => {
-                    return <p key={elem.id}>{elem.name}</p>;
-                  })
-                ) : (
-                  <p>N/A</p>
-                )}
-              </div>
-            </div>
-            <div>
-              <div>
-                <span>Publisher</span>
-                {dataGame.publishers.length >= 1 ? (
-                  dataGame.publishers.map((elem) => {
-                    return <p key={elem.id}>{elem.name}</p>;
-                  })
-                ) : (
-                  <p>N/A</p>
-                )}
-              </div>
-              <div>
-                <span>Age rating</span>
-                <p>{dataGame.esrb_rating ? dataGame.esrb_rating.id : "N/A"}</p>
-              </div>
-            </div>
-          </div>{" "}
-          <p
-            className="test3"
-            style={{
-              WebkitLineClamp: showMore ? 500 : 3,
-            }}
-          >
-            {dataGame.description_raw}
-          </p>
-          {dataGame.description_raw && !showMore ? (
-            <span onClick={() => setShowMore(true)}> Show more</span>
-          ) : (
-            dataGame.description_raw && (
-              <span onClick={() => setShowMore(false)}>Show Less</span>
-            )
-          )}
-        </div>
-      </div>
-      <ul
-        style={{
-          display: showMore ? "none" : "flex",
-          alignItems: "center",
-          flexDirection: "column",
-        }}
+    <>
+      {openReviewDialog && selectedReview && (
+        <ReviewDialog
+          open={openReviewDialog}
+          userToken={currentUser.token}
+          selectedReview={selectedReview}
+          handleClose={handleCloseReviewDialog}
+        />
+      )}
+      {showModal && (
+        <DialogAddReview
+          setShowModal={setShowModal}
+          showModal={showModal}
+          dataGame={dataGame}
+          userToken={currentUser.token}
+          setListReviews={setListReviews}
+        />
+      )}
+      <Grid
+        container
+        className={!isMobile ? classes.container : ""}
+        spacing={2}
       >
-        <h3 style={{ padding: 20, fontSize: 25 }}>Reviews</h3>
-        {listReviews.length === 0 && <span>No reviews yet</span>}
-        {listReviews.map((elem, index) => {
-          return (
-            <GameReviews
-              key={index}
-              elem={elem}
-              userToken={currentUser.token}
-              setHideLike={setHideLike}
-              hideLike={hideLike}
-              setReviewsAdd={setReviewsAdd}
-            />
-          );
-        })}
-      </ul>
-    </Grid>
+        <Grid item xs={12}>
+          <Typography variant="h6" align="center">
+            {dataGame.name}
+          </Typography>
+        </Grid>
+        <Grid item xs={12}>
+          <Grid container>
+            <Grid item xs={12} md={4}>
+              <img
+                className={classes.gamePicture}
+                src={
+                  dataGame.background_image ? dataGame.background_image : noImg
+                }
+                alt={dataGame.name}
+              />
+            </Grid>
+            <Grid item xs={12} md={8}>
+              <Box display="flex">
+                {alreadyInFav ? (
+                  <Button
+                    className={classes.inFav}
+                    onClick={() => {
+                      handleClickAction("remove");
+                    }}
+                  >
+                    <BookmarkRoundedIcon color="success" />
+                  </Button>
+                ) : (
+                  <Button
+                    className={classes.notInFav}
+                    onClick={() => {
+                      handleClickAction("save");
+                    }}
+                  >
+                    <BookmarkBorderRoundedIcon />
+                  </Button>
+                )}
+                <Button
+                  className={classes.addReviewBtn}
+                  onClick={() => {
+                    if (currentUser) {
+                      setShowModal(true);
+                    } else {
+                      alert("You must be logged for add a review");
+                    }
+                  }}
+                >
+                  <AddCommentRoundedIcon />
+                </Button>
+              </Box>
+              <Grid container>
+                <Grid item xs={6}>
+                  <Typography>Platforms</Typography>
+
+                  {dataGame.platforms.map((elem, index) => {
+                    return (
+                      index < 3 && (
+                        <Typography
+                          key={index}
+                          variant="body2"
+                          color="GrayText"
+                        >
+                          {elem.platform.name}
+                        </Typography>
+                      )
+                    );
+                  })}
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography>Genre</Typography>
+                  {dataGame.genres.length > 0 ? (
+                    dataGame.genres.map((elem, index) => {
+                      return (
+                        index < 3 && (
+                          <Typography
+                            key={index}
+                            variant="body2"
+                            color="GrayText"
+                          >
+                            {elem.name}
+                          </Typography>
+                        )
+                      );
+                    })
+                  ) : (
+                    <Typography variant="body2" color="GrayText">
+                      N/A
+                    </Typography>
+                  )}
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography>Released date</Typography>
+                  <Typography variant="body2" color="GrayText">
+                    {dataGame.released}
+                  </Typography>
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography>Developers</Typography>
+                  {dataGame.developers.length >= 1 ? (
+                    dataGame.developers.map((elem, index) => {
+                      return (
+                        index < 3 && (
+                          <Typography
+                            key={index}
+                            variant="body2"
+                            color="GrayText"
+                          >
+                            {elem.name}
+                          </Typography>
+                        )
+                      );
+                    })
+                  ) : (
+                    <Typography variant="body2" color="GrayText">
+                      N/A
+                    </Typography>
+                  )}
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography>Publisher</Typography>
+
+                  {dataGame.publishers.length >= 1 ? (
+                    dataGame.publishers.map((elem, index) => {
+                      return (
+                        index < 3 && (
+                          <Typography
+                            key={index}
+                            variant="body2"
+                            color="GrayText"
+                          >
+                            {elem.name}
+                          </Typography>
+                        )
+                      );
+                    })
+                  ) : (
+                    <Typography variant="body2" color="GrayText">
+                      N/A
+                    </Typography>
+                  )}
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography>Age rating</Typography>
+                  <Typography variant="body2" color="GrayText">
+                    {dataGame.esrb_rating ? dataGame.esrb_rating.id : "N/A"}
+                  </Typography>
+                </Grid>
+              </Grid>
+            </Grid>
+          </Grid>
+        </Grid>
+        <Grid item xs={12}>
+          <Grid
+            container
+            style={{ border: "1px solid white", borderRadius: 8, padding: 10 }}
+          >
+            <Grid item xs={11}>
+              <Typography>Description</Typography>
+              <Typography
+                id="description"
+                style={{
+                  height: 100,
+                  overflow: "scroll",
+                  scrollBehavior: "smooth",
+                }}
+                variant="body2"
+                color="GrayText"
+              >
+                {dataGame.description_raw
+                  ? dataGame.description_raw
+                  : "No description"}
+              </Typography>
+            </Grid>
+            {dataGame.description_raw || hideBtnDescription ? (
+              <Grid
+                item
+                xs={1}
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <IconButton
+                  style={{ color: "#ff4655" }}
+                  onClick={() =>
+                    (document.getElementById("description").scrollTop -= 25)
+                  }
+                >
+                  <KeyboardArrowUpRoundedIcon />
+                </IconButton>
+                <IconButton
+                  style={{ color: "#ff4655" }}
+                  onClick={() =>
+                    (document.getElementById("description").scrollTop += 25)
+                  }
+                >
+                  <KeyboardArrowDownRoundedIcon />
+                </IconButton>
+              </Grid>
+            ) : (
+              <div />
+            )}
+          </Grid>
+        </Grid>
+
+        <Grid item xs={12}>
+          <Typography variant="h6" align="center">
+            Reviews
+          </Typography>
+          {listReviews.length === 0 ? (
+            <Typography variant="body2" align="center" color="GrayText">
+              No reviews yet
+            </Typography>
+          ) : (
+            listReviews
+              .sort((a, b) => b.rate.result - a.rate.result)
+              .map((review, index) => {
+                const reviewRating = review.rate.users.find(
+                  (user) => user.id === currentUser.uid
+                );
+                return (
+                  <GameReviews
+                    handleClickReview={handleClickReview}
+                    key={index}
+                    setListReviews={setListReviews}
+                    listReviews={listReviews}
+                    review={review}
+                    reviewRating={reviewRating}
+                    userToken={currentUser.token}
+                  />
+                );
+              })
+          )}
+        </Grid>
+      </Grid>
+    </>
   );
 };
 
 const mapStateToProps = (state) => {
   return {
     currentUser: state.userState.currentUser,
-  }
-}
+  };
+};
 
 export default compose(withRouter, connect(mapStateToProps))(Game);

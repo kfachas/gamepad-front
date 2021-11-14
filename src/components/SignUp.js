@@ -46,12 +46,8 @@ const SignUp = ({ setSignUpModal }) => {
         formData.append("email", values.email);
         formData.append("username", values.username);
         formData.append("password", values.password);
-        const response = await axios.post(
-          "https://gamepad-back.herokuapp.com/user/signup",
-          formData
-        );
+        await axios.post("http://localhost:3310/user/signup", formData);
         alert("You can now sign in !");
-        console.log(response.data);
       } else {
         setErrorMsg("Password not correct");
       }

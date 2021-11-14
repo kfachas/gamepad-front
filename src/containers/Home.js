@@ -21,35 +21,31 @@ const Home = () => {
   const [page, setPage] = useState(1);
 
   useEffect(() => {
-    const fetchTags = async () => {
-      try {
-        const response = await axios.get(
-          "https://gamepad-back.herokuapp.com/tags"
-        );
-        setTagsData(response.data.results);
-      } catch (error) {
-        console.log(error.message);
-      }
-    };
-    const fetchPlatforms = async () => {
-      try {
-        const response = await axios.get(
-          "https://gamepad-back.herokuapp.com/platforms"
-        );
-        setPlatformsData(response.data.results);
-      } catch (error) {
-        console.log(error.message);
-      }
-    };
     fetchPlatforms();
     fetchTags();
   }, []);
+  const fetchTags = async () => {
+    try {
+      const response = await axios.get("http://localhost:3310/tags");
+      setTagsData(response.data.results);
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
+  const fetchPlatforms = async () => {
+    try {
+      const response = await axios.get("http://localhost:3310/platforms");
+      setPlatformsData(response.data.results);
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await axios.get(
-          `https://gamepad-back.herokuapp.com/?search=${userSearch}&page=${page}&ordering=${ordering}&tags=${tag}&platforms=${platform}`
+          `http://localhost:3310/?search=${userSearch}&page=${page}&ordering=${ordering}&tags=${tag}&platforms=${platform}`
         );
         setData(response.data.results);
         setCount(response.data.count);

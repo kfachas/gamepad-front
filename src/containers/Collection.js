@@ -13,7 +13,7 @@ const Collection = ({ currentUser }) => {
     const fetchFavs = async () => {
       try {
         const response = await axios.post(
-          "https://gamepad-back.herokuapp.com/user/gamesFav",
+          "http://localhost:3310/user/gamesFav",
           { token: currentUser.token },
           {
             headers: {
@@ -23,7 +23,6 @@ const Collection = ({ currentUser }) => {
         );
         setUserFavs(response.data);
         setIsLoading(false);
-        console.log(response);
       } catch (error) {
         console.log(error.message);
       }
@@ -33,7 +32,7 @@ const Collection = ({ currentUser }) => {
   const updateFavs = async () => {
     try {
       const response = await axios.post(
-        "https://gamepad-back.herokuapp.com/user/gamesFav",
+        "http://localhost:3310/user/gamesFav",
         { token: currentUser.token },
         {
           headers: {
@@ -43,7 +42,7 @@ const Collection = ({ currentUser }) => {
       );
       setUserFavs(response.data);
     } catch (error) {
-      console.log(error);
+      console.log(error.message);
     }
   };
   return isLoading ? (
@@ -66,13 +65,16 @@ const Collection = ({ currentUser }) => {
                 <button
                   onClick={async () => {
                     try {
-                      const response = await axios.post(
-                        "https://gamepad-back.herokuapp.com/user/removeFavorites",
+                      await axios.post(
+                        "http://localhost:3310/user/removeFavorites",
                         { game: { id: elem.id } },
-                        { headers: { Authorization: `Bearer ${currentUser.token}` } }
+                        {
+                          headers: {
+                            Authorization: `Bearer ${currentUser.token}`,
+                          },
+                        }
                       );
                       updateFavs();
-                      console.log(response);
                     } catch (error) {
                       console.log(error.message);
                     }
@@ -91,8 +93,8 @@ const Collection = ({ currentUser }) => {
 
 const mapStateToProps = (state) => {
   return {
-    currentUser: state.userState.currentUser
-  }
-}
+    currentUser: state.userState.currentUser,
+  };
+};
 
 export default compose(connect(mapStateToProps))(Collection);

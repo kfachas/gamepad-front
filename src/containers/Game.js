@@ -1,6 +1,6 @@
 import { withRouter } from "react-router";
 import axios from "axios";
-import { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Loader from "../components/Loader";
 import GameReviews from "../components/GameReviews";
 import DialogAddReview from "../components/DialogAddReview";
@@ -20,6 +20,8 @@ import BookmarkRoundedIcon from "@mui/icons-material/BookmarkRounded";
 import { makeStyles } from "@mui/styles";
 import { Box, useTheme } from "@mui/system";
 import ReviewDialog from "../components/ReviewDialog";
+
+import Helmet from "../components/Helmet";
 
 import KeyboardArrowUpRoundedIcon from "@mui/icons-material/KeyboardArrowUpRounded";
 import KeyboardArrowDownRoundedIcon from "@mui/icons-material/KeyboardArrowDownRounded";
@@ -44,6 +46,11 @@ const useStyles = makeStyles(() => ({
   container: {
     padding: 50,
   },
+  description: {
+    height: 100,
+    overflow: "scroll",
+    scrollBehavior: "smooth",
+  },
 }));
 
 const Game = ({ currentUser, match }) => {
@@ -55,31 +62,66 @@ const Game = ({ currentUser, match }) => {
   const [openReviewDialog, setOpenReviewDialog] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [selectedReview, setSelectedReview] = useState(null);
-  const [hideBtnDescription, setHideBtnDescription] = useState(false);
+  const [action, setAction] = useState("");
+
+  const descriptionRef = useRef(null);
 
   const theme = useTheme();
 
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
+  const scroll = descriptionRef.current?.scrollTop;
+  const height = descriptionRef.current?.scrollHeight - 100;
+
+  const isOverflown =
+    descriptionRef.current?.scrollHeight >
+      descriptionRef.current?.clientHeight ||
+    descriptionRef.current?.scrollWidth > descriptionRef.current?.clientWidth;
+
+  const componentMount = useRef(false);
+
   useEffect(() => {
-    if (match.params.id && currentUser) {
-      fetchDataGame(match.params.id, currentUser.token);
+    componentMount.current = true;
+    if (match.params.id && componentMount.current) {
+      fetchDataGame(match.params.id);
     }
+    return () => {
+      if (componentMount.current) {
+        componentMount.current = false;
+      }
+    };
   }, [currentUser, match.params.id]);
+
+  const fetchReviews = async (gameId) => {
+    console.log("fetchReviews");
+    try {
+      const response = await axios.post("http://localhost:3310/game/reviews", {
+        gameId,
+      });
+
+      setListReviews(response.data);
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
 
   const fetchDataGame = async (id, token) => {
     setIsLoading(true);
+    console.log("fetchDataGame");
     try {
       const response = await axios.get(`http://localhost:3310/games/${id}`);
 
       setDataGame({ ...response.data, id });
 
+      fetchReviews(response.data.id);
+
       if (token) {
         const response2 = await axios.post(
           "http://localhost:3310/user/findGameFav",
-          { token: currentUser.token, gameId: id },
+          { token: currentUser.token, gameId: response.data.id },
           { headers: { Authorization: `Bearer ${token}` } }
         );
+        console.log(response2.data);
         setAlreadyInFav(response2.data.isAlreadyInFav);
       }
     } catch (error) {
@@ -88,32 +130,13 @@ const Game = ({ currentUser, match }) => {
     setIsLoading(false);
   };
 
-  useEffect(() => {
-    const fetchReviews = async () => {
-      try {
-        const response = await axios.post(
-          "http://localhost:3310/game/reviews",
-          { gameId: dataGame.id }
-        );
-
-        setListReviews(response.data);
-      } catch (error) {
-        console.log(error.message);
-      }
-    };
-    if (dataGame) {
-      fetchReviews();
-    }
-  }, [dataGame]);
-
-  const handleClickAction = async (action) => {
+  const handleClickActionFav = async (action) => {
     try {
-      const response = await axios.post(
+      await axios.post(
         "http://localhost:3310/user/updateFavorites",
         { action, game: dataGame },
         { headers: { Authorization: `Bearer ${currentUser.token}` } }
       );
-      console.log(response);
     } catch (error) {
       console.log(error);
     }
@@ -129,31 +152,23 @@ const Game = ({ currentUser, match }) => {
     setOpenReviewDialog(false);
   };
 
-  useEffect(() => {
-    const element = document.getElementById("description");
-    if (dataGame.description_raw && element) {
-      const isOverflown =
-        element.scrollHeight > element.clientHeight ||
-        element.scrollWidth > element.clientWidth;
-      if (!isOverflown) {
-        setHideBtnDescription(true);
-      }
-    }
-  }, [dataGame.description_raw]);
-
   return isLoading ? (
     <Loader />
   ) : (
     <>
-      {openReviewDialog && selectedReview && (
+      <Helmet title={dataGame.name} />
+
+      {openReviewDialog && (
         <ReviewDialog
           open={openReviewDialog}
           userToken={currentUser.token}
           selectedReview={selectedReview}
+          setListReviews={setListReviews}
+          listReviews={listReviews}
           handleClose={handleCloseReviewDialog}
         />
       )}
-      {showModal && (
+      {/* {showModal && (
         <DialogAddReview
           setShowModal={setShowModal}
           showModal={showModal}
@@ -161,7 +176,8 @@ const Game = ({ currentUser, match }) => {
           userToken={currentUser.token}
           setListReviews={setListReviews}
         />
-      )}
+      )} */}
+
       <Grid
         container
         className={!isMobile ? classes.container : ""}
@@ -189,7 +205,7 @@ const Game = ({ currentUser, match }) => {
                   <Button
                     className={classes.inFav}
                     onClick={() => {
-                      handleClickAction("remove");
+                      handleClickActionFav("remove");
                     }}
                   >
                     <BookmarkRoundedIcon color="success" />
@@ -198,7 +214,7 @@ const Game = ({ currentUser, match }) => {
                   <Button
                     className={classes.notInFav}
                     onClick={() => {
-                      handleClickAction("save");
+                      handleClickActionFav("save");
                     }}
                   >
                     <BookmarkBorderRoundedIcon />
@@ -208,9 +224,7 @@ const Game = ({ currentUser, match }) => {
                   className={classes.addReviewBtn}
                   onClick={() => {
                     if (currentUser) {
-                      setShowModal(true);
-                    } else {
-                      alert("You must be logged for add a review");
+                      setOpenReviewDialog(true);
                     }
                   }}
                 >
@@ -221,7 +235,7 @@ const Game = ({ currentUser, match }) => {
                 <Grid item xs={6}>
                   <Typography>Platforms</Typography>
 
-                  {dataGame.platforms.map((elem, index) => {
+                  {dataGame.platforms?.map((elem, index) => {
                     return (
                       index < 3 && (
                         <Typography
@@ -237,7 +251,7 @@ const Game = ({ currentUser, match }) => {
                 </Grid>
                 <Grid item xs={6}>
                   <Typography>Genre</Typography>
-                  {dataGame.genres.length > 0 ? (
+                  {dataGame.genres?.length > 0 ? (
                     dataGame.genres.map((elem, index) => {
                       return (
                         index < 3 && (
@@ -265,7 +279,7 @@ const Game = ({ currentUser, match }) => {
                 </Grid>
                 <Grid item xs={6}>
                   <Typography>Developers</Typography>
-                  {dataGame.developers.length >= 1 ? (
+                  {dataGame.developers?.length > 0 ? (
                     dataGame.developers.map((elem, index) => {
                       return (
                         index < 3 && (
@@ -288,7 +302,7 @@ const Game = ({ currentUser, match }) => {
                 <Grid item xs={6}>
                   <Typography>Publisher</Typography>
 
-                  {dataGame.publishers.length >= 1 ? (
+                  {dataGame.publishers?.length > 0 ? (
                     dataGame.publishers.map((elem, index) => {
                       return (
                         index < 3 && (
@@ -325,22 +339,20 @@ const Game = ({ currentUser, match }) => {
           >
             <Grid item xs={11}>
               <Typography>Description</Typography>
-              <Typography
+
+              <p
+                ref={descriptionRef}
                 id="description"
-                style={{
-                  height: 100,
-                  overflow: "scroll",
-                  scrollBehavior: "smooth",
-                }}
+                className={classes.description}
                 variant="body2"
                 color="GrayText"
               >
                 {dataGame.description_raw
                   ? dataGame.description_raw
                   : "No description"}
-              </Typography>
+              </p>
             </Grid>
-            {dataGame.description_raw || hideBtnDescription ? (
+            {isOverflown && (
               <Grid
                 item
                 xs={1}
@@ -352,24 +364,24 @@ const Game = ({ currentUser, match }) => {
                 }}
               >
                 <IconButton
+                  disabled={scroll === 0}
                   style={{ color: "#ff4655" }}
-                  onClick={() =>
-                    (document.getElementById("description").scrollTop -= 25)
-                  }
+                  onClick={() => {
+                    setAction((descriptionRef.current.scrollTop -= 25));
+                  }}
                 >
                   <KeyboardArrowUpRoundedIcon />
                 </IconButton>
                 <IconButton
+                  disabled={scroll === height}
                   style={{ color: "#ff4655" }}
-                  onClick={() =>
-                    (document.getElementById("description").scrollTop += 25)
-                  }
+                  onClick={() => {
+                    setAction((descriptionRef.current.scrollTop += 25));
+                  }}
                 >
                   <KeyboardArrowDownRoundedIcon />
                 </IconButton>
               </Grid>
-            ) : (
-              <div />
             )}
           </Grid>
         </Grid>
@@ -391,8 +403,9 @@ const Game = ({ currentUser, match }) => {
                 );
                 return (
                   <GameReviews
-                    handleClickReview={handleClickReview}
                     key={index}
+                    currentUser={currentUser}
+                    handleClickReview={handleClickReview}
                     setListReviews={setListReviews}
                     listReviews={listReviews}
                     review={review}

@@ -10,13 +10,14 @@ import {
   CardActions,
   CardContent,
   Divider,
+  IconButton,
   Tooltip,
   Typography,
 } from "@mui/material";
 import { Box } from "@mui/system";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
-import ThumbUpIcon from "@mui/icons-material/ThumbUp";
-import ThumbDownIcon from "@mui/icons-material/ThumbDown";
+
+import EditRoundedIcon from "@mui/icons-material/EditRounded";
 
 const useStyles = makeStyles((theme) => ({
   onThumb: {
@@ -32,9 +33,7 @@ const useStyles = makeStyles((theme) => ({
     height: 150,
     cursor: "pointer",
     marginTop: 16,
-    "&:hover": {
-      opacity: "0.8",
-    },
+
     padding: 16,
   },
   noPadding: {
@@ -49,6 +48,7 @@ const GameReviews = ({
   handleClickReview,
   listReviews,
   setListReviews,
+  currentUser,
 }) => {
   const classes = useStyles();
   const dateSplit = review.review_date.split("T");
@@ -78,7 +78,7 @@ const GameReviews = ({
   const getTooltipTitle = (userRate, total, rate) => {
     if (userRate === rate) {
       let text = "";
-      if (rate === 1) {
+      if (rate === "like") {
         if (total > 1) {
           text = `You and ${total - 1} people like this review`;
         } else {
@@ -94,12 +94,12 @@ const GameReviews = ({
         return text;
       }
     } else {
-      if (total > 0 && rate === 1) {
+      if (total > 0 && rate === "like") {
         return `${total} people like this review`;
-      } else if (total > 0 && rate === -1) {
+      } else if (total > 0 && rate === "dislike") {
         return `${total} people dislike this review`;
       } else {
-        if (rate === 1) {
+        if (rate === "like") {
           return "No like for this review";
         } else {
           return "No dislike for this review";
@@ -118,7 +118,11 @@ const GameReviews = ({
   };
   const getColorOfPourcentages = (pourcentage) => {
     if (pourcentage >= 50) {
-      return "Highlight";
+      if (pourcentage >= 75) {
+        return "primary";
+      } else {
+        return "Highlight";
+      }
     } else {
       if (pourcentage >= 25) {
         return "#ed6c02";
@@ -129,7 +133,7 @@ const GameReviews = ({
   };
 
   return (
-    <Card onClick={() => handleClickReview(review)} className={classes.card}>
+    <Card className={classes.card}>
       <CardContent className={classes.noPadding}>
         <Box display="flex" justifyContent="space-between">
           <Box display="flex" alignItems="center">
@@ -143,6 +147,14 @@ const GameReviews = ({
             >
               {getPourcentages(review.rate.like, review.rate.result)}
             </Typography>
+            {currentUser.uid === review.owner._id && (
+              <IconButton
+                onClick={() => handleClickReview(review)}
+                color="inherit"
+              >
+                <EditRoundedIcon />
+              </IconButton>
+            )}
           </Box>
           <Box display="flex" alignItems="center">
             {review.owner.account && review.owner.account.picture ? (
@@ -176,17 +188,17 @@ const GameReviews = ({
               }}
             >
               <Tooltip
-                title={getTooltipTitle(reviewRating?.rate, review.rate.like, 1)}
+                title={getTooltipTitle(
+                  reviewRating?.rate,
+                  review.rate.like,
+                  "like"
+                )}
               >
                 <ThumbUpOffAltIcon
                   className={classes.onThumb}
-                  color={
-                    reviewRating && reviewRating.rate === 1
-                      ? "primary"
-                      : "inherit"
-                  }
+                  color={reviewRating?.rate === "like" ? "primary" : "inherit"}
                   onClick={(e) => {
-                    handleClickRating(e, 1);
+                    handleClickRating(e, "like");
                   }}
                 />
               </Tooltip>
@@ -196,18 +208,16 @@ const GameReviews = ({
                 title={getTooltipTitle(
                   reviewRating?.rate,
                   review.rate.dislike,
-                  -1
+                  "dislike"
                 )}
               >
                 <ThumbDownOffAltIcon
                   className={classes.onThumb}
                   color={
-                    reviewRating && reviewRating.rate === -1
-                      ? "warning"
-                      : "inherit"
+                    reviewRating?.rate === "dislike" ? "warning" : "inherit"
                   }
                   onClick={(e) => {
-                    handleClickRating(e, -1);
+                    handleClickRating(e, "dislike");
                   }}
                 />
               </Tooltip>

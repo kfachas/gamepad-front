@@ -278,8 +278,11 @@ main {
 
 footer {
   margin-top: 50px;
+  text-align: center;
   position: static;
   bottom: 0px;
+  left: 0;
+  right: 0;
   height: 50px;
 }
 @keyframes example {

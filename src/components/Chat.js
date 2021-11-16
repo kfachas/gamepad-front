@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   CircularProgress,
   IconButton,
@@ -15,20 +15,22 @@ import classNames from "classnames";
 const useStyles = makeStyles((theme) => ({
   senderBox: {
     alignSelf: "flex-end",
+    maxWidth: "70%",
   },
   receiverBox: {
     alignSelf: "flex-start",
+    maxWidth: "70%",
   },
   senderText: {
     borderRadius: 5,
     padding: 8,
-    backgroundColor: "blue",
+    backgroundColor: "#b5e7a0",
     color: "white",
   },
   receiverText: {
     borderRadius: 5,
     padding: 8,
-    backgroundColor: "green",
+    backgroundColor: "#dac292",
     color: "white",
   },
 }));
@@ -39,7 +41,13 @@ const Chat = ({ socket, currentUser }) => {
   const [showChat, setShowChat] = useState(false);
   const [messageValue, setMessageValue] = useState("");
   const [listMessages, setListMessages] = useState([]);
-  const [newMessage, setNewMessage] = useState(false);
+  const chatRef = useRef(null);
+
+  const scrollToBottom = () => {
+    chatRef.current.scrollIntoView({
+      block: "end",
+    });
+  };
 
   useEffect(() => {
     setLoading(true);
@@ -65,16 +73,19 @@ const Chat = ({ socket, currentUser }) => {
         name: currentUser.account.username,
       });
       setMessageValue("");
-      setNewMessage(true);
     }
   };
-
-  if (newMessage) {
+  useEffect(() => {
     socket?.on("newMessage", (newMessage) => {
       setListMessages([...listMessages, newMessage]);
     });
-    setNewMessage(false);
-  }
+  });
+
+  useEffect(() => {
+    if (chatRef && chatRef.current) {
+      scrollToBottom();
+    }
+  }, [chatRef.current]);
 
   return (
     <Box position="fixed" bottom={0} right={0} padding={3}>
@@ -92,13 +103,13 @@ const Chat = ({ socket, currentUser }) => {
           width="400px"
           bgcolor="GrayText"
           position="relative"
+          padding={1}
         >
           <Box
             height="450px"
             width="100%"
             display="flex"
             flexDirection="column"
-            padding={1}
             overflow="scroll"
           >
             {loading ? (
@@ -124,13 +135,25 @@ const Chat = ({ socket, currentUser }) => {
                       <Typography
                         align={isSender ? "right" : "left"}
                         variant="body2"
-                        color="GrayText"
+                        color="CaptionText"
                       >
                         {isSender ? "You" : message.name}
                       </Typography>
-                      <Typography variant="body2">{message.text}</Typography>
-                      {/* <Typography>{moment(message.createdDate).unix()}</Typography> */}
+                      <Typography
+                        variant="body2"
+                        align={isSender ? "right" : "left"}
+                      >
+                        {message.text}
+                      </Typography>
+                      <Typography
+                        align={isSender ? "right" : "left"}
+                        style={{ fontSize: "10px" }}
+                        color="InactiveCaptionText"
+                      >
+                        {moment(message.createdDate).format("HH:mm")}
+                      </Typography>
                     </Box>
+                    <Box ref={chatRef} />
                   </Box>
                 );
               })

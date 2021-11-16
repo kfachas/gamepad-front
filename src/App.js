@@ -83,7 +83,7 @@ function App({ currentUser, onSetUser }) {
 
           <Route path="*" component={NoMatch} />
         </Switch>
-        <Chat socket={socket} currentUser={currentUser} />
+        <Chat socket={socket.current} currentUser={currentUser} />
         <Grid item xs={12}>
           <Footer />
         </Grid>

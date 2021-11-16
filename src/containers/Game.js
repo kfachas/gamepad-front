@@ -82,8 +82,8 @@ const Game = ({ currentUser, match }) => {
 
   useEffect(() => {
     componentMount.current = true;
-    if (match.params.id && componentMount.current) {
-      fetchDataGame(match.params.id);
+    if (match.params.id && currentUser && componentMount.current) {
+      fetchDataGame(match.params.id, currentUser.token);
     }
     return () => {
       if (componentMount.current) {
@@ -114,14 +114,12 @@ const Game = ({ currentUser, match }) => {
       setDataGame({ ...response.data, id });
 
       fetchReviews(response.data.id);
-
       if (token) {
         const response2 = await axios.post(
           "http://localhost:3310/user/findGameFav",
           { token: currentUser.token, gameId: response.data.id },
           { headers: { Authorization: `Bearer ${token}` } }
         );
-        console.log(response2.data);
         setAlreadyInFav(response2.data.isAlreadyInFav);
       }
     } catch (error) {

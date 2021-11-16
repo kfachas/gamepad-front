@@ -77,22 +77,21 @@ const GameReviews = ({
 
   const getTooltipTitle = (userRate, total, rate) => {
     if (userRate === rate) {
-      let text = "";
+      let text = "You ";
       if (rate === "like") {
         if (total > 1) {
-          text = `You and ${total - 1} people like this review`;
+          text += `and ${total - 1} people like this review`;
         } else {
-          text = "You like this review";
+          text += "like this review";
         }
-        return text;
       } else {
         if (total > 1) {
-          text = `You and ${total - 1} people dislike this review`;
+          text += `and ${total - 1} people dislike this review`;
         } else {
-          text = "You dislike this review";
+          text += "dislike this review";
         }
-        return text;
       }
+      return text;
     } else {
       if (total > 0 && rate === "like") {
         return `${total} people like this review`;
@@ -110,7 +109,7 @@ const GameReviews = ({
 
   const getPourcentages = (like, result) => {
     if (result === 0) {
-      return "Pas encore d'interactions";
+      return "No rate";
     }
 
     const res = (100 * like) / result;

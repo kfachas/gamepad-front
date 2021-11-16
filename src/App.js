@@ -19,6 +19,7 @@ import { compose } from "redux";
 import NoMatch from "./containers/NoMatch";
 
 import { io } from "socket.io-client";
+import Chat from "./components/Chat";
 
 function App({ currentUser, onSetUser }) {
   const [hideModal, setHideModal] = useState(true);
@@ -82,6 +83,7 @@ function App({ currentUser, onSetUser }) {
 
           <Route path="*" component={NoMatch} />
         </Switch>
+        <Chat socket={socket} currentUser={currentUser} />
         <Grid item xs={12}>
           <Footer />
         </Grid>

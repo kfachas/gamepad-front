@@ -18,12 +18,10 @@ import { connect } from "react-redux";
 import { compose } from "redux";
 import NoMatch from "./containers/NoMatch";
 
-import { io } from "socket.io-client";
 import Chat from "./components/Chat";
 
 function App({ currentUser, onSetUser }) {
   const [hideModal, setHideModal] = useState(true);
-  const socket = useRef();
 
   useEffect(() => {
     if (currentUser) {
@@ -41,21 +39,6 @@ function App({ currentUser, onSetUser }) {
       component: Collection,
     },
   ];
-
-  useEffect(() => {
-    socket.current = io("localhost:8900");
-    return () => {
-      socket.current.disconnect();
-    };
-  }, []);
-
-  useEffect(() => {
-    socket.current.on("welcome", (message) => console.log(message));
-    socket.current.emit("addUser", currentUser?.uid);
-    socket.current.on("getUsers", (message) =>
-      console.log("getUsers", message)
-    );
-  }, [currentUser?.uid]);
 
   return (
     <Router>
@@ -83,7 +66,7 @@ function App({ currentUser, onSetUser }) {
 
           <Route path="*" component={NoMatch} />
         </Switch>
-        <Chat socket={socket.current} currentUser={currentUser} />
+        <Chat currentUser={currentUser} />
         <Grid item xs={12}>
           <Footer />
         </Grid>

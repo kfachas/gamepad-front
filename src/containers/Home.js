@@ -8,22 +8,18 @@ import { Link } from "react-router-dom";
 import Loader from "../components/Loader";
 
 const Home = () => {
-  const [data, setData] = useState();
+  const [data, setData] = useState([]);
+  const [count, setCount] = useState(0);
   const [userSearch, setUserSearch] = useState("");
-  const [count, setCount] = useState();
   const [isLoading, setIsLoading] = useState(true);
   const [platform, setPlatform] = useState("");
   const [tag, setTag] = useState("");
-  const [tagsData, setTagsData] = useState();
-  const [platformsData, setPlatformsData] = useState();
+  const [tagsData, setTagsData] = useState([]);
+  const [platformsData, setPlatformsData] = useState([]);
   const [ordering, setOrdering] = useState("-rating");
 
   const [page, setPage] = useState(1);
 
-  useEffect(() => {
-    fetchPlatforms();
-    fetchTags();
-  }, []);
   const fetchTags = async () => {
     try {
       const response = await axios.get("http://localhost:3310/tags");
@@ -41,22 +37,22 @@ const Home = () => {
     }
   };
 
+  const fetchData = async () => {
+    setIsLoading(true);
+    try {
+      const response = await axios.get(
+        `http://localhost:3310/?search=${userSearch}&page=${page}&ordering=${ordering}&tags=${tag}&platforms=${platform}`
+      );
+      setData(response.data.results);
+      setCount(response.data.count);
+    } catch (error) {
+      console.log(error.message);
+    }
+    setIsLoading(false);
+  };
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get(
-          `http://localhost:3310/?search=${userSearch}&page=${page}&ordering=${ordering}&tags=${tag}&platforms=${platform}`
-        );
-        setData(response.data.results);
-        setCount(response.data.count);
-
-        setTimeout(() => {
-          setIsLoading(false);
-        }, 500);
-      } catch (error) {
-        console.log(error.message);
-      }
-    };
+    fetchPlatforms();
+    fetchTags();
     fetchData();
   }, [userSearch, platform, tag, ordering, page]);
   const limit = Math.ceil(count / 20);
@@ -106,13 +102,14 @@ const Home = () => {
             }}
           >
             <option value="">Platform: All</option>
-            {platformsData.map((elem) => {
-              return (
-                <option value={elem.id} key={elem.id}>
-                  {elem.name}
-                </option>
-              );
-            })}
+            {platformsData.length > 0 &&
+              platformsData.map((elem) => {
+                return (
+                  <option value={elem.id} key={elem.id}>
+                    {elem.name}
+                  </option>
+                );
+              })}
           </select>
           <select
             name="type"
@@ -122,13 +119,14 @@ const Home = () => {
             }}
           >
             <option value="">Type: All</option>
-            {tagsData.map((elem) => {
-              return (
-                <option value={elem.id} key={elem.id}>
-                  {elem.name}
-                </option>
-              );
-            })}
+            {tagsData.length > 0 &&
+              tagsData.map((elem) => {
+                return (
+                  <option value={elem.id} key={elem.id}>
+                    {elem.name}
+                  </option>
+                );
+              })}
           </select>
         </div>
         <div>
@@ -147,31 +145,32 @@ const Home = () => {
       </div>
 
       <ul className="listGames">
-        {data.map((elem) => {
-          return (
-            <Link
-              key={elem.id}
-              to={{
-                pathname: `/games/${elem.id}`,
-              }}
-            >
-              <li
-                style={
-                  elem.background_image
-                    ? { backgroundImage: `url(${elem.background_image})` }
-                    : { backgroundImage: `url(${imgNotFound})` }
-                }
+        {data.length > 0 &&
+          data.map((elem) => {
+            return (
+              <Link
+                key={elem.id}
+                to={{
+                  pathname: `/games/${elem.id}`,
+                }}
               >
-                <div className="titleLi">
-                  <span>{elem.name}</span>
-                  <div className="hoverGame">
-                    <p>HIDDEN</p>
+                <li
+                  style={
+                    elem.background_image
+                      ? { backgroundImage: `url(${elem.background_image})` }
+                      : { backgroundImage: `url(${imgNotFound})` }
+                  }
+                >
+                  <div className="titleLi">
+                    <span>{elem.name}</span>
+                    <div className="hoverGame">
+                      <p>HIDDEN</p>
+                    </div>
                   </div>
-                </div>
-              </li>
-            </Link>
-          );
-        })}
+                </li>
+              </Link>
+            );
+          })}
       </ul>
       <div className="pagination">
         <span
